@@ -1,0 +1,20 @@
+{
+  "name": "hardhat-block-explore",
+  "version": "1.0.0",
+  "description": "a block explore for hardhat local dev",
+  "author": "axw",
+  "license": "MIT",
+  "scripts": {
+    "build:prod": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml build --progress=plain",
+    "start:prod": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml up"
+  }
+}
+
+
+
+
+
+
+
+
+

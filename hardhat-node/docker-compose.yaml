@@ -1,0 +1,12 @@
+services: 
+  hardhat-node:
+    build: 
+      context: hardhat-node
+      secrets:
+        - rpc_endpoint
+    image: hardhat-node:1.0
+    ports:
+      - "8545:8545"
+    networks:
+      - location-network
+

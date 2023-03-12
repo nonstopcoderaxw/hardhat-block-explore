@@ -1,0 +1,5 @@
+networks:
+  location-network:
+secrets:                        
+  rpc_endpoint:
+    file: rpc_endpoint.txt

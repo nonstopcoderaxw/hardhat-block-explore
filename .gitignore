@@ -1,0 +1,10 @@
+.free-notes.txt
+cache/
+node_modules/
+yarn-error.log
+yarn.lock
+rpc_endpoint.txt
+hardhat-node/node_modules
+hardhat-node/.env
+hardhat-node/yarn-error.log
+hardhat-node/yarn.log
