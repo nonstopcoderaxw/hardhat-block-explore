@@ -5,16 +5,11 @@
   "author": "axw",
   "license": "MIT",
   "scripts": {
-    "build:prod": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml build --progress=plain",
-    "start:prod": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml up"
+    "build:hardhat:only": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml build --progress=plain",
+    "up:hardhat:only": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml up",
+    "down:hardhat:only": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml up",
+    "up:postgresql:only": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml up",
+    "down:postgresql:only": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml down",
+    "up:postgresql:adminer:only": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml up -d adminer"
   }
 }
-
-
-
-
-
-
-
-
-

@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: user0
+      POSTGRES_PASSWORD_FILE: /run/secrets/user0_pw
+      POSTGRES_DB: postgres    # the name of the default database.
+      PGDATA: /var/lib/postgresql/data   # the default location for PGDATA is /var/lib/postgresql/data
+      POSTGRES_USER1: user1
+      POSTGRES_USER1_PASSWORD_FILE: /run/secrets/user1_pw
+    secrets:
+      - user0_pw
+      - user1_pw
+    volumes:
+      - ./postgres/init_db_script.sh:/docker-entrypoint-initdb.d/init_db_script.sh    # place script under docker-entrypoint-initdb.d will auto triggered after db init. **It requires a custom postgreSQL build for "chmod -R 777"
+      - ./postgres/clear_db_script.sh:/clear_db_script.sh
+    ports:
+      - "5432:5432"
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+

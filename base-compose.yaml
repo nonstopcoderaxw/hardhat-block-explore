@@ -1,5 +1,10 @@
+
 networks:
   location-network:
 secrets:                        
   rpc_endpoint:
     file: rpc_endpoint.txt
+  user0_pw:
+    file: user0_pw.txt
+  user1_pw:
+    file: user1_pw.txt

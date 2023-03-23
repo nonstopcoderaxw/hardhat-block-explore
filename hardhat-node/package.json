@@ -30,9 +30,7 @@
     "dotenv": "^16.0.3"
   },
   "scripts": {
-    "start:dev": "npx nodemon",
-    "build": "rimraf ./build && tsc", 
-    "start": "yarn build && node build/index.js"
+    "start-node": "npx hardhat node"
   }
 }
 

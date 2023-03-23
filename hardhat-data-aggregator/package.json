@@ -1,0 +1,31 @@
+{
+  "name": "hardhat-data-aggregator",
+  "version": "1.0.0",
+  "description": "aggregates hardhat node data",
+  "author": "axw",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.9.5",
+    "@types/node": "^18.14.6",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
+    "ts-node": "^10.9.1",
+    "ts-mocha": "^10.0.0",
+    "nodemon": "^2.0.21",
+    "rimraf": "^4.3.1",
+    "mocha": "^10.2.0",
+    "chai": "^4.3.7",
+    "ethers": "^6.1.0",
+    "@typechain/ethers-v5":"^10.1.0"
+  },
+  "scripts": {
+    "start:dev": "npx nodemon",
+    "rebuild": "rimraf ./build && tsc --project tsconfig.build.json", 
+    "build": "tsc --project tsconfig.build.json", 
+    "start": "yarn build && node build/index.js",
+    "run-script": "ts-node",
+    "test": "ts-mocha test/*.ts"
+  }
+}
+
+
