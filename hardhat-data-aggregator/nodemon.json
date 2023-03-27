@@ -2,5 +2,5 @@
   "watch": ["src", "test"],
   "ext": ".ts,.js",
   "ignore": [],
-  "exec": "yarn build && yarn test"
+  "exec": "yarn ts:build && yarn ts:test"
 }

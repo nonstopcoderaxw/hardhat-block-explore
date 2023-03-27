@@ -16,16 +16,23 @@
     "mocha": "^10.2.0",
     "chai": "^4.3.7",
     "ethers": "^6.1.0",
-    "@typechain/ethers-v5":"^10.1.0"
+    "@typechain/ethers-v5":"^10.1.0",
+    "@prisma/client": "^4.11.0",
+    "prisma": "^4.11.0"
+
   },
   "scripts": {
-    "start:dev": "npx nodemon",
-    "rebuild": "rimraf ./build && tsc --project tsconfig.build.json", 
-    "build": "tsc --project tsconfig.build.json", 
-    "start": "yarn build && node build/index.js",
-    "run-script": "ts-node",
-    "test": "ts-mocha test/*.ts"
+    "ts:start:dev": "npx nodemon",
+    "ts:rebuild": "rimraf ./build && tsc --project tsconfig.build.json", 
+    "ts:build": "tsc --project tsconfig.build.json", 
+    "ts:run-script": "ts-node",
+    "ts:test": "ts-mocha test/*.ts",
+    "prisma:migrate": "npx prisma migrate dev --name init",
+    "prisma:generate": "npx prisma generate",
+    "prisma:schema:update": "yarn prisma:migrate; yarn prisma:generate",
+    "prisma:studio": "npx prisma studio"
   }
 }
+
 
 

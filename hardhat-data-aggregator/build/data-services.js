@@ -36,21 +36,21 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Data = void 0;
+exports.DataServices = void 0;
 var hardhat_types_1 = require("./hardhat-types");
 var client_1 = require("@prisma/client");
-var Data = /** @class */ (function () {
-    function Data() {
+var DataServices = /** @class */ (function () {
+    function DataServices() {
         this.prisma = new client_1.PrismaClient();
     }
-    Data.prototype.getAddresses = function (signers) {
+    DataServices.prototype.getAddresses = function (signers) {
         var addresses = [];
         for (var i = 0; i < signers.length; i++) {
             addresses.push(new hardhat_types_1.Address(signers[i].address));
         }
         return addresses;
     };
-    Data.prototype.createAccounts = function (addresses) {
+    DataServices.prototype.createAccounts = function (addresses) {
         return __awaiter(this, void 0, void 0, function () {
             var data, e_1;
             return __generator(this, function (_a) {
@@ -63,7 +63,7 @@ var Data = /** @class */ (function () {
                     case 1:
                         _a.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, this.prisma.account.createMany({
-                                data: [{ address: "111", balance: 0 }]
+                                data: data
                             })];
                     case 2:
                         _a.sent();
@@ -76,6 +76,6 @@ var Data = /** @class */ (function () {
             });
         });
     };
-    return Data;
+    return DataServices;
 }());
-exports.Data = Data;
+exports.DataServices = DataServices;
