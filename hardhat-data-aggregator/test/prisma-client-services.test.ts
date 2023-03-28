@@ -1,28 +1,32 @@
-import { assert, expect } from "chai";
 import { File } from "./utils/utils";
-//import { PrismaClientServices } from "../src/prisma-client-services";
-//import { Account } from '@prisma/client'
+import { PrismaClientServices } from "../src/prisma-client-services";
+import { DataServices } from "../src/data-services"
+import { Account } from '@prisma/client'
+import { Address } from "./hardhat-types";
 
+// This require database connection!
+describe.skip("prisma-client-services.test.ts", () => {
+	let services: PrismaClientServices;
+	let dataService: DataServices;
+	let addresses: Address[];
 
-// // require the postgres db running
-// describe('prisma-client-services.ts', function () {
-//   let services: PrismaClientServices;
+	
+	beforeAll(async () => {
+		services = new PrismaClientServices();
+		dataService = new DataServices();
+		let signers = File.readAsJson("./test/data/signers.json");
+	    addresses = dataService.getAddresses(signers);
 
-//   before(async function (){
-//     services = new PrismaClientServices();
-//     expect(services).to.be.an("object");
-//   });
+	    // delete test data if any
+	    await services.delete.accounts(addresses);
+	});
 
-//   it('#findAllAccounts', async function () {
-//     // const accounts: Account = await services.read.accounts();
-//     // expect(accounts).to.be.an("array");
-//   });
+	test('#create.accounts', async () => {
+		const signers = File.readAsJson("./test/data/signers.json");
+	    const addresses: Address[] = dataService.getAddresses(signers);
+		await services.create.accounts(addresses);
+	});
 
-//   // create mock data
-//   // after(function () {
-//   //   File.write("test/data/signers.json", JSON.stringify(hh.signers, null, 4));
-//   // })
+})
 
-
-// });
 

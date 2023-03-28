@@ -18,20 +18,4 @@ export class DataServices {
 
 		return addresses;
 	}
-
-	async createAccounts(addresses: Address[]): Promise<void> {
-		const data = addresses.map(item => {
-		    return { address: item.value };
-		});
-
-		try {
-			await this.prisma.account.createMany({
-		    	data: data
-			});
-		} catch (e: any) {
-			throw (e);
-		}
-	}
-
-	
 }
