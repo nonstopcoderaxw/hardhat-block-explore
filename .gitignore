@@ -13,3 +13,5 @@ yarn.log
 init_db_script_local.sh
 clear_db_script_local.sh
 hardhat-data-aggregator/prisma/migrations/
+hardhat-data-aggregator/coverage/
+
