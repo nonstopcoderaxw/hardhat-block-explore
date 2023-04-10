@@ -4,7 +4,10 @@ import fs from "fs";
 import * as dotenv from 'dotenv'
 dotenv.config();
 
-console.log("Forking at block number " + process.env.blockNumber);
+
+if (process.env.FORKING == "true") {
+  console.log("Forking at block number " + process.env.BLOCK_NUMBER);
+}
 
 
 const config: HardhatUserConfig = {
@@ -16,10 +19,11 @@ const config: HardhatUserConfig = {
         auto: true,
         interval: 0
       },
-      forking: {
-        url: getRpcEndPoint(),
-        blockNumber: process.env.blockNumber ? parseInt(process.env.blockNumber) : undefined
-      }
+      forking: process.env.FORKING == "true" ? 
+      {
+        url: process.env.REMOTE_NODE_ENDPOINT ? process.env.REMOTE_NODE_ENDPOINT : undefined,
+        blockNumber: process.env.BLOCK_NUMBER ? parseInt(process.env.BLOCK_NUMBER) : undefined
+      } : undefined
     }
   },
   solidity: {
@@ -46,16 +50,16 @@ const config: HardhatUserConfig = {
   }
 };
 
-function getRpcEndPoint(): string {
-  try {
-    return fs.readFileSync('/run/secrets/rpc_endpoint', 'utf8'); // from docker
-  } catch(e) {};
+// function getRpcEndPoint(): string {
+//   try {
+//     return fs.readFileSync('/run/secrets/rpc_endpoint', 'utf8'); // from docker
+//   } catch(e) {};
 
-  try {
-    return fs.readFileSync('../rpc_endpoint.txt', 'utf8');
-  } catch(e) {};
+//   try {
+//     return fs.readFileSync('../rpc_endpoint.txt', 'utf8');
+//   } catch(e) {};
 
-  throw new Error('RPC Endpoint Not Found!');
-};
+//   throw new Error('RPC Endpoint Not Found!');
+// };
 
 export default config;
