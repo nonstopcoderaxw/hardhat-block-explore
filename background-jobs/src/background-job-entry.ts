@@ -4,7 +4,7 @@ import { ImportJob } from "./Jobs";
 import { HardhatNodeServices } from "./HardhatNodeServices";
 import { PrismaClient, Account } from '@prisma/client';
 import { PrismaClientServices } from "./PrismaClientServices";
-import { backgroundJobLog as log } from "../log.config";
+import { backgroundJobLog as log } from "./log.config";
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -44,11 +44,11 @@ async function main() {
 
   const importW = new Worker("importQueue", async (job: Job) => {
     // calling the worker function  
-    try{
-        await importJob.importJobExec();
-    }catch (e: any) {
-        throw (e.toString());
-    }
+    // try{
+    //     await importJob.importJobExec();
+    // }catch (e: any) {
+    //     throw (e);
+    // }
   }, { connection, autorun: false } );
 
   importW.run();

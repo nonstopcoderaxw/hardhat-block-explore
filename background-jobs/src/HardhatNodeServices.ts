@@ -1,13 +1,13 @@
 import type { JsonRpcSigner, BigNumberish } from "ethers";
-import ethers, { JsonRpcProvider, TransactionReceipt, Log, TransactionResponse, Block } from "ethers";
+import ethers, { JsonRpcProvider, TransactionReceipt as Receipt, Log, TransactionResponse, Block } from "ethers";
 import { Address } from "./Address";
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-export type EnhancedBlock = {
-	block: Block,
-	transactions: TransactionResponse[]
-	transactionReceipts: TransactionReceipt[]
+export type EnhancedBlock<B, TR, R> = {
+	block: B,
+	transactions: TR[]
+	transactionReceipts: R[]
 }
 
 export class HardhatNodeServices {
@@ -21,7 +21,7 @@ export class HardhatNodeServices {
 		try {
         	return new JsonRpcProvider(this.rpc_endpoint);
 		} catch (e: any) {
-			throw (e.toString());
+			throw (e);
 		}
     }
 
@@ -31,7 +31,7 @@ export class HardhatNodeServices {
 	         const signers: JsonRpcSigner[] = await this.provider.listAccounts();
 	         return signers[signers.length - 1];
 	      } catch(e: any) {
-	        throw (e.toString());
+	        throw (e);
 	      }
 	    })();
     }
@@ -41,7 +41,7 @@ export class HardhatNodeServices {
 	      try {
 	         return await this.provider.listAccounts();
 	      } catch(e: any) {
-	        throw (e.toString());
+	        throw (e);
 	      }
 	    })();
     }
@@ -51,7 +51,7 @@ export class HardhatNodeServices {
 	      try {
 	         return BigInt(await this.provider.getBlockNumber());
 	      } catch(e: any) {
-	        throw (e.toString());
+	        throw (e);
 	      }
 	    })(); 
     }
@@ -66,36 +66,36 @@ export class HardhatNodeServices {
 			}
 			return balances;
 		} catch (e: any) {
-			throw (e.toString());
+			throw (e);
 		}
 	}
 
-	async getEnhancedBlock(bn: bigint): Promise<EnhancedBlock> {
+	async getEnhancedBlock(bn: bigint): Promise<EnhancedBlock<Block, TransactionResponse, Receipt>> {
 
 		try {
 			const _block: Block | null  = await this.provider.getBlock(bn);
-			if (!_block) throw ("Null Block");
+			if (!_block) throw (new Error("Null Block"));
 			const block = _block as Block;
 			const transactions: TransactionResponse[] = [];
-			const transactionReceipts: TransactionReceipt[] = [];
+			const transactionReceipts: Receipt[] = [];
 			for(let i = 0; i < block.transactions.length; i++) {
 				const tx: TransactionResponse | null = await this.provider.getTransaction(block.transactions[i]);
-				if(!tx) throw ("Null Tx");
-				const receipt: TransactionReceipt | null = await this.provider.getTransactionReceipt(tx.hash);
-				if(!receipt) throw("Null Receipt");
+				if(!tx) throw (new Error("Null Tx"));
+				const receipt: Receipt | null = await this.provider.getTransactionReceipt(tx.hash);
+				if(!receipt) throw(new Error("Null Receipt"));
 				
 				transactions.push(tx as TransactionResponse);
-				transactionReceipts.push(receipt as TransactionReceipt);
+				transactionReceipts.push(receipt as Receipt);
 			}
 
 			return { block: block, transactions: transactions, transactionReceipts: transactionReceipts};
 		} catch (e: any) {
-			throw (e.toString());
+			throw (e);
 		}
 	}
 
 	getFirstBlockNumber(): bigint {
-		if (process.env.FORKING == "true" && !process.env.BLOCK_NUMBER) throw ("Block_Number_Not_Set");
+		if (process.env.FORKING == "true" && !process.env.BLOCK_NUMBER) throw (new Error("Block_Number_Not_Set"));
 		
 		if(process.env.FORKING == "false") return BigInt(0);
 		

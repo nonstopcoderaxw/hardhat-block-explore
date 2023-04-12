@@ -41,11 +41,12 @@ export class Create {
 		this.prisma = prisma;
 	}
 
-	async accounts(accounts: Address[], balances: string[], skipDuplicates: boolean = true): Promise<void> {
+	async accounts(accounts: Address[], balances: string[], isContracts: boolean[], skipDuplicates: boolean = true): Promise<void> {
 		const data = accounts.map((item, i) => {
 			return { 
 				address: item.value,
-				balance: balances[i]
+				balance: balances[i],
+				isContract: isContracts[i]
 			}
 		})
 		try {
@@ -97,7 +98,7 @@ export class Delete {
 				where: { address: { in: data }}
 			})
 		} catch (e: any) {
-			throw (e.toString());
+			throw (e);
 		}
 
 	}

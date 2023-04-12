@@ -1,8 +1,9 @@
-import { JsonRpcProvider, JsonRpcSigner } from "ethers";
+import { JsonRpcProvider, JsonRpcSigner, TransactionReceipt as Receipt, TransactionResponse, Block} from "ethers";
 import { Address } from "./Address";
 import { PrismaClientServices } from "./PrismaClientServices";
 import { HardhatNodeServices, EnhancedBlock } from "./HardhatNodeServices";
-import { Account } from '@prisma/client';
+import { Account, TransactionReceipt } from '@prisma/client';
+
 
 // Summary:
 // Import: hardhat raw data into db
@@ -25,7 +26,8 @@ export class ImportJob {
 
 		return addresses;
 	}
-	// ****PPPP - refract required for contract data
+
+	// this will only upsert EOA
 	async upsertAccounts(addresses: Address[], balances: bigint[]): Promise<void> {
 		
 		try {
@@ -73,7 +75,11 @@ export class ImportJob {
 			
 			// exec create
 			if (accountsToCreate.length > 0) {
-				await this.prismaClientServices.create.accounts(accountsToCreate, balancesToCreate, false);
+				const isContracts: boolean[] = [];
+				accountsToCreate.map(() => {
+					isContracts.push(true);
+				})
+				await this.prismaClientServices.create.accounts(accountsToCreate, balancesToCreate, isContracts, false);
 			}
 
 			// exec update
@@ -84,7 +90,7 @@ export class ImportJob {
 			}
 		} catch (e: any) {
 			throw (e);
-		} 
+		}
 	}
 
 	async importJobExec(bn: bigint): Promise<void> {
@@ -101,15 +107,15 @@ export class ImportJob {
 			)
 
 			// create block, with transaction, with receipt, with log
-			const enhancedBlock: EnhancedBlock = await this.hardhatNodeServices.getEnhancedBlock(bn);
+			const enhancedBlock: EnhancedBlock<Block, TransactionResponse, Receipt> = await this.hardhatNodeServices.getEnhancedBlock(bn);
 			const data = {
 				number: enhancedBlock.block.number,
-				baseFeePerGas: enhancedBlock.block.baseFeePerGas,
+				baseFeePerGas: enhancedBlock.block.baseFeePerGas as bigint,
 			  	difficulty: enhancedBlock.block.difficulty,
 			  	extraData: enhancedBlock.block.extraData,
 			  	gasLimit: enhancedBlock.block.gasLimit,
 			  	gasUsed: enhancedBlock.block.gasUsed,
-			  	hash: enhancedBlock.block.hash,
+			  	hash: enhancedBlock.block.hash as string,
 			  	miner: enhancedBlock.block.miner,
 			  	nonce: enhancedBlock.block.nonce,
 			  	parentHash: enhancedBlock.block.parentHash,
@@ -118,14 +124,13 @@ export class ImportJob {
 					create: 
 						enhancedBlock.transactions.map((item, i) => {
 							return {
-								accessList: item.accessList,
 							  	chainId: item.chainId,
 							 	data: item.data,
 							  	from: item.from,
 							  	gasLimit: item.gasLimit,
 							  	gasPrice: item.gasPrice,
-							  	maxFeePerGas: item.maxFeePerGas,
-							  	maxPriorityFeePerGas: item.maxPriorityFeePerGas,
+							  	maxFeePerGas: item.maxFeePerGas as bigint,
+							  	maxPriorityFeePerGas: item.maxPriorityFeePerGas as bigint,
 							  	nonce: item.nonce,
 							  	to: item.to,
 							  	type: item.type,
@@ -145,7 +150,7 @@ export class ImportJob {
 									  	gasUsed: enhancedBlock.transactionReceipts[i].gasUsed,
 									  	index: enhancedBlock.transactionReceipts[i].index,
 									  	logsBloom: enhancedBlock.transactionReceipts[i].logsBloom,
-									  	status: enhancedBlock.transactionReceipts[i].status,
+									  	status: enhancedBlock.transactionReceipts[i].status as number,
 									  	to: enhancedBlock.transactionReceipts[i].to,
 										logs: {
 											create:
@@ -157,7 +162,7 @@ export class ImportJob {
 													  	blockNumber: _item.blockNumber,
 													  	address: _item.address,
 													  	data: _item.data,
-													  	topics: _item.topics
+													  	topics: _item.topics as string[]
 													}
 												})
 										}
@@ -173,16 +178,38 @@ export class ImportJob {
 			})
 			
 		} catch(e: any) {
-			throw (e.toString());
+			throw (e);
 		}
 	}
 
 	async transformJobExec(bn: bigint): Promise<void> {
-		// load raw tx form db
-			
+		// load raw tx, tx receipt form db
+		const txHashes: TransactionReceipt[] = await this.prismaClientServices.prisma.transactionReceipt.findMany({
+			where: {
+				AND: [
+					{ 
+						blockNumber: { equals: bn } 
+					}, 
+					{ 
+						contractAddress: { not: null } 
+					},
+					{ 
+						contractAddress: { not: undefined } 
+					}
+				]
+			}
+		})
+
 		// transform - contract
-		
-		// transform - abi (from local hh or etherscan)
+
+	}
+
+	async createContracts(bn: bigint): Promise<void> {
+
+	}
+
+	async updateContractBalances(): Promise<void> {
+
 	}
 }
 

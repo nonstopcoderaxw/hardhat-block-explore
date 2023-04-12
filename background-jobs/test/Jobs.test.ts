@@ -3,29 +3,29 @@ import { Address } from "../src/Address";
 import { File } from "./utils/utils";
 import { PrismaClientServices } from "../src/PrismaClientServices";
 import { cleardb } from "./test-data-funcs";
-import { HardhatNodeServices } from "../src/HardhatNodeServices";
+import { HardhatNodeServices, EnhancedBlock } from "../src/HardhatNodeServices";
 import { PrismaClient, Account } from '@prisma/client';
+import { TransactionReceipt as Receipt, TransactionResponse, Block } from "ethers";
 
 
 jest.mock("../src/HardhatNodeServices");
 
-HardhatNodeServices.mockImplementation(() => {
+(HardhatNodeServices as any).mockImplementation(() => {
 	return {
 		signers: File.readAsJson("./test/data/signers.json").slice(0, 2),
 		getBalances: jest.fn().mockImplementation(() => {
 			return [ "90000000000000000000000", "10000000000000000000000" ];
 		}),
 		getEnhancedBlock: jest.fn().mockImplementation(() => {
-			return File.readAsJson("./test/data/enhancedBlock.json");
+			return (File.readAsJson("./test/data/enhancedBlock.json") as EnhancedBlock<Block, TransactionResponse, Receipt>);
 		})
 	}
 })
 
-describe.only("Jobs.test.ts", () => {
+describe("Jobs.test.ts", () => {
 	let prismaClientServices: PrismaClientServices;
 	let hardhatNodeServices: HardhatNodeServices;
 	let importJob: ImportJob;
-
 
 	beforeAll(async () => {
 		prismaClientServices = new PrismaClientServices(new PrismaClient());
@@ -63,7 +63,7 @@ describe.only("Jobs.test.ts", () => {
 	    expect(balActual[2].balance).toEqual(balances[1]);
 	}) 
 
-	test.only("importJobExec", async() => {
+	test("importJobExec", async() => {
 		//console.log((new HardhatNodeServices("")).signers);
 		//console.log(importJob.hardhatNodeServices.getBalances([]));
 		await importJob.importJobExec(0);

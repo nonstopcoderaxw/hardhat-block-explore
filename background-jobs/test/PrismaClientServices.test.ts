@@ -6,7 +6,7 @@ import { PrismaClient, Account } from '@prisma/client';
 
 
 // This require database connection!
-describe.skip("prisma-client-services.test.ts", () => {
+describe("prisma-client-services.test.ts", () => {
 	let services: PrismaClientServices;
 	let importJob: ImportJob;
 	let addresses: Address[];
@@ -24,9 +24,13 @@ describe.skip("prisma-client-services.test.ts", () => {
 	test('#create.accounts', async () => {
 		const signers = File.readAsJson("./test/data/signers.json");
 	    const addresses: Address[] = importJob.getAddresses(signers).slice(0, 2);
-		await services.create.accounts(addresses, [ "10000000000000000000000", "10000000000000000000000" ]);
+		await services.create.accounts(addresses, [ "10000000000000000000000", "10000000000000000000000" ], [ true, false ]);
 	});
 
+	afterAll(async () => {
+		// clear test records
+		await services.delete.accounts(addresses);
+	})
 })
 
 

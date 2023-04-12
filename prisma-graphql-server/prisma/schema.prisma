@@ -14,7 +14,6 @@ model Account {
   address String @id
   balance String
   isContract Boolean
-  abi String?
 }
 
 model Transaction {
@@ -23,18 +22,17 @@ model Transaction {
   blockNumber BigInt
   transactionReceipt TransactionReceipt @relation(fields: [hash], references: [hash], onDelete: Cascade)
 
-  accessList String[]
-  chainId String
+  chainId BigInt
   data String
   from String
-  gasLimit String
-  gasPrice String
-  maxFeePerGas String
-  maxPriorityFeePerGas String
+  gasLimit BigInt
+  gasPrice BigInt
+  maxFeePerGas BigInt
+  maxPriorityFeePerGas BigInt
   nonce BigInt
   to String?
   type BigInt
-  value String
+  value BigInt
   r String
   s String
   v BigInt
@@ -48,10 +46,10 @@ model TransactionReceipt {
   blockHash String
   blockNumber BigInt
   contractAddress String?
-  cumulativeGasUsed String
+  cumulativeGasUsed BigInt
   from String
-  gasPrice String
-  gasUsed String
+  gasPrice BigInt
+  gasUsed BigInt
   index BigInt
   logsBloom String
   status BigInt
@@ -73,15 +71,16 @@ model Log {
   @@id([transactionHash, index])
 }
 
+
 model Block {
   number BigInt @id
   transactions Transaction[]
 
-  baseFeePerGas String
-  difficulty String
+  baseFeePerGas BigInt
+  difficulty BigInt
   extraData String
-  gasLimit String
-  gasUsed String
+  gasLimit BigInt
+  gasUsed BigInt
   hash String
   miner String
   nonce String

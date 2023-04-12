@@ -1,7 +1,7 @@
 import { LogLevel } from "typescript-logging";
 import { CategoryProvider, Category } from "typescript-logging-category-style";
 
-const provider = CategoryProvider.createProvider("ExampleProvider", {
+const provider = CategoryProvider.createProvider("log-provider", {
   level: LogLevel.Debug,
 });
 
