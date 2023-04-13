@@ -34,7 +34,6 @@ describe("hardhat-node-servivces.test.ts", () => {
 
 		const result = await hh.getEnhancedBlock(await hh.blockNumber);
 
-
 		expect(result).toHaveProperty("transactions");
 		expect(result.transactions).toHaveLength(1);
 		expect(result).toHaveProperty("transactionReceipts");
@@ -42,7 +41,7 @@ describe("hardhat-node-servivces.test.ts", () => {
 	})
 
 	test("#getFirstBlockNumber", () => {
-		expect(hh.getFirstBlockNumber).not.toThrow();
+		expect(HardhatNodeServices.getFirstBlockNumber).not.toThrow();
 	})
 
 })

@@ -4,14 +4,13 @@ import { PrismaClientServices } from "./PrismaClientServices";
 import { HardhatNodeServices, EnhancedBlock } from "./HardhatNodeServices";
 import { Account, TransactionReceipt } from '@prisma/client';
 
-
+ 
 // Summary:
 // Import: hardhat raw data into db
 // Transform: transform db data to UI friendly(aka. graphql)
-
 export class ImportJob {
-	private prismaClientServices: PrismaClientServices;
-	private hardhatNodeServices: HardhatNodeServices;
+	public prismaClientServices: PrismaClientServices;
+	public hardhatNodeServices: HardhatNodeServices;
 	
 	constructor(hardhatNodeServices: HardhatNodeServices, prismaClientServices: PrismaClientServices) {
 		this.hardhatNodeServices = hardhatNodeServices;
@@ -24,14 +23,13 @@ export class ImportJob {
 			addresses.push(new Address(signers[i].address));
 		}
 
-		return addresses;
+		return addresses; 
 	}
-
-	// this will only upsert EOA
-	async upsertAccounts(addresses: Address[], balances: bigint[]): Promise<void> {
+ 
+	async upsertAccounts(addresses: Address[], balances: bigint[], isContracts: boolean[]): Promise<void> {
 		
 		try {
-			const accounts: Account[] = await this.prismaClientServices.read.accounts();
+			const accounts: Account[] = await this.prismaClientServices.prisma.account.findMany({});
 			const accountsToCreate: Address[] = [];
 			const balancesToCreate: string[] = [];
 			const accountsToUpdate: Address[] = [];
@@ -75,10 +73,6 @@ export class ImportJob {
 			
 			// exec create
 			if (accountsToCreate.length > 0) {
-				const isContracts: boolean[] = [];
-				accountsToCreate.map(() => {
-					isContracts.push(true);
-				})
 				await this.prismaClientServices.create.accounts(accountsToCreate, balancesToCreate, isContracts, false);
 			}
 
@@ -103,18 +97,21 @@ export class ImportJob {
 
 			await this.upsertAccounts(
 				addresses,
-				await this.hardhatNodeServices.getBalances(addresses)
+				await this.hardhatNodeServices.getBalances(addresses),
+				addresses.map(() => {
+					return false;
+				})
 			)
 
 			// create block, with transaction, with receipt, with log
-			const enhancedBlock: EnhancedBlock<Block, TransactionResponse, Receipt> = await this.hardhatNodeServices.getEnhancedBlock(bn);
+			const enhancedBlock: EnhancedBlock = await this.hardhatNodeServices.getEnhancedBlock(bn);
 			const data = {
 				number: enhancedBlock.block.number,
-				baseFeePerGas: enhancedBlock.block.baseFeePerGas as bigint,
-			  	difficulty: enhancedBlock.block.difficulty,
+				baseFeePerGas: BigInt(enhancedBlock.block.baseFeePerGas as bigint),
+			  	difficulty: BigInt(enhancedBlock.block.difficulty),
 			  	extraData: enhancedBlock.block.extraData,
-			  	gasLimit: enhancedBlock.block.gasLimit,
-			  	gasUsed: enhancedBlock.block.gasUsed,
+			  	gasLimit: BigInt(enhancedBlock.block.gasLimit),
+			  	gasUsed: BigInt(enhancedBlock.block.gasUsed),
 			  	hash: enhancedBlock.block.hash as string,
 			  	miner: enhancedBlock.block.miner,
 			  	nonce: enhancedBlock.block.nonce,
@@ -124,17 +121,17 @@ export class ImportJob {
 					create: 
 						enhancedBlock.transactions.map((item, i) => {
 							return {
-							  	chainId: item.chainId,
+							  	chainId: BigInt(item.chainId),
 							 	data: item.data,
 							  	from: item.from,
-							  	gasLimit: item.gasLimit,
-							  	gasPrice: item.gasPrice,
-							  	maxFeePerGas: item.maxFeePerGas as bigint,
-							  	maxPriorityFeePerGas: item.maxPriorityFeePerGas as bigint,
+							  	gasLimit: BigInt(item.gasLimit),
+							  	gasPrice: BigInt(item.gasPrice),
+							  	maxFeePerGas: BigInt(item.maxFeePerGas as bigint),
+							  	maxPriorityFeePerGas: BigInt(item.maxPriorityFeePerGas as bigint),
 							  	nonce: item.nonce,
 							  	to: item.to,
 							  	type: item.type,
-							  	value: item.value,
+							  	value: BigInt(item.value),
 							  	r: item.signature.r,
 							  	s: item.signature.s,
 							  	v: item.signature.v,
@@ -144,13 +141,13 @@ export class ImportJob {
 										blockHash: enhancedBlock.transactionReceipts[i].blockHash,
 									  	blockNumber: enhancedBlock.transactionReceipts[i].blockNumber,
 									  	contractAddress: enhancedBlock.transactionReceipts[i].contractAddress,
-									  	cumulativeGasUsed: enhancedBlock.transactionReceipts[i].cumulativeGasUsed,
+									  	cumulativeGasUsed: BigInt(enhancedBlock.transactionReceipts[i].cumulativeGasUsed),
 									  	from: enhancedBlock.transactionReceipts[i].from,
-									  	gasPrice: enhancedBlock.transactionReceipts[i].gasPrice,
-									  	gasUsed: enhancedBlock.transactionReceipts[i].gasUsed,
+									  	gasPrice: BigInt(enhancedBlock.transactionReceipts[i].gasPrice),
+									  	gasUsed: BigInt(enhancedBlock.transactionReceipts[i].gasUsed),
 									  	index: enhancedBlock.transactionReceipts[i].index,
 									  	logsBloom: enhancedBlock.transactionReceipts[i].logsBloom,
-									  	status: enhancedBlock.transactionReceipts[i].status as number,
+									  	status: Number(enhancedBlock.transactionReceipts[i].status as number),
 									  	to: enhancedBlock.transactionReceipts[i].to,
 										logs: {
 											create:
@@ -183,33 +180,51 @@ export class ImportJob {
 	}
 
 	async transformJobExec(bn: bigint): Promise<void> {
-		// load raw tx, tx receipt form db
-		const txHashes: TransactionReceipt[] = await this.prismaClientServices.prisma.transactionReceipt.findMany({
-			where: {
-				AND: [
-					{ 
-						blockNumber: { equals: bn } 
-					}, 
-					{ 
-						contractAddress: { not: null } 
-					},
-					{ 
-						contractAddress: { not: undefined } 
-					}
-				]
-			}
-		})
-
-		// transform - contract
-
+		try { 
+			await this.createContracts(bn) 
+		} catch (e: any) {
+			throw (e);
+		}
 	}
 
 	async createContracts(bn: bigint): Promise<void> {
+		try {
+			// load raw tx, tx receipt form db
+			const contractAddresses: { contractAddress: string | null }[] = await this.prismaClientServices.prisma.transactionReceipt.findMany({
+				where: {
+					AND: [
+						{ 
+							blockNumber: { equals: bn } 
+						}, 
+						{ 
+							contractAddress: { not: null } 
+						},
+						{ 
+							contractAddress: { not: undefined } 
+						}
+					]
+				},
+				select: {
+					contractAddress: true
+				}
+			})
+			
+			// save contract addresses into Account
+			const addresses: Address[] = [];
+			contractAddresses.map((item) => {
+				 addresses.push(new Address(item.contractAddress as string));
+			})
 
-	}
-
-	async updateContractBalances(): Promise<void> {
-
+			await this.upsertAccounts(
+				addresses,
+				await this.hardhatNodeServices.getBalances(addresses),
+				addresses.map(() => {
+					return true;
+				})
+			)
+		} catch (e: any) {
+			throw (e)
+		}
 	}
 }
 

@@ -1,13 +1,13 @@
 import type { JsonRpcSigner, BigNumberish } from "ethers";
-import ethers, { JsonRpcProvider, TransactionReceipt as Receipt, Log, TransactionResponse, Block } from "ethers";
+import ethers, { JsonRpcProvider, TransactionReceipt, Log, TransactionResponse, Block } from "ethers";
 import { Address } from "./Address";
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-export type EnhancedBlock<B, TR, R> = {
-	block: B,
-	transactions: TR[]
-	transactionReceipts: R[]
+export type EnhancedBlock = {
+	block: Block,
+	transactions: TransactionResponse[]
+	transactionReceipts: TransactionReceipt[]
 }
 
 export class HardhatNodeServices {
@@ -70,22 +70,22 @@ export class HardhatNodeServices {
 		}
 	}
 
-	async getEnhancedBlock(bn: bigint): Promise<EnhancedBlock<Block, TransactionResponse, Receipt>> {
+	async getEnhancedBlock(bn: bigint): Promise<EnhancedBlock> {
 
 		try {
 			const _block: Block | null  = await this.provider.getBlock(bn);
 			if (!_block) throw (new Error("Null Block"));
 			const block = _block as Block;
 			const transactions: TransactionResponse[] = [];
-			const transactionReceipts: Receipt[] = [];
+			const transactionReceipts: TransactionReceipt[] = [];
 			for(let i = 0; i < block.transactions.length; i++) {
 				const tx: TransactionResponse | null = await this.provider.getTransaction(block.transactions[i]);
 				if(!tx) throw (new Error("Null Tx"));
-				const receipt: Receipt | null = await this.provider.getTransactionReceipt(tx.hash);
+				const receipt: TransactionReceipt | null = await this.provider.getTransactionReceipt(tx.hash);
 				if(!receipt) throw(new Error("Null Receipt"));
 				
 				transactions.push(tx as TransactionResponse);
-				transactionReceipts.push(receipt as Receipt);
+				transactionReceipts.push(receipt as TransactionReceipt);
 			}
 
 			return { block: block, transactions: transactions, transactionReceipts: transactionReceipts};
@@ -94,7 +94,7 @@ export class HardhatNodeServices {
 		}
 	}
 
-	getFirstBlockNumber(): bigint {
+	static getFirstBlockNumber(): bigint {
 		if (process.env.FORKING == "true" && !process.env.BLOCK_NUMBER) throw (new Error("Block_Number_Not_Set"));
 		
 		if(process.env.FORKING == "false") return BigInt(0);

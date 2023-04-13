@@ -24,14 +24,6 @@ export class Read {
 	constructor(prisma: PrismaClient) {
 		this.prisma = prisma;
 	}
-
-	async accounts(): Promise<Account[]> {
-		try {
-			return await this.prisma.account.findMany();
-		} catch (e: any) {
-			throw (e);
-		}
-	}
 }
 
 export class Create {

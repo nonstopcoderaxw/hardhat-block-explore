@@ -11,6 +11,8 @@ dotenv.config();
 main();
 
 type LogMessage = {
+  ProcessedBlockNumber: string,
+  CurrentBlockNumber: string
   JobId: string,
   JobName: string,
   Message: string | Object,
@@ -22,7 +24,15 @@ async function main() {
       maxRetriesPerRequest: 0
   });
 
+  var bnToProcess: bigint;
+  var noMoreBlockToProcessNotified: boolean;
+  if (process.env.FROM_FIRST_BLOCK == "0") {
+    bnToProcess = HardhatNodeServices.getFirstBlockNumber();
+  }
+
   const importQ = new Queue('importQueue', { connection });
+  await importQ.resume();
+  
   // cron: every 2 seconds
   // run:  import hh raw data into db
   await importQ.add(
@@ -43,23 +53,40 @@ async function main() {
   );
 
   const importW = new Worker("importQueue", async (job: Job) => {
-    // calling the worker function  
-    // try{
-    //     await importJob.importJobExec();
-    // }catch (e: any) {
-    //     throw (e);
-    // }
+    try{
+
+        // check currentbn and lastbn
+        const currbn = await importJob.hardhatNodeServices.blockNumber;
+
+        if ( currbn >= bnToProcess ) {
+          await importJob.importJobExec(bnToProcess);
+          await importJob.transformJobExec(bnToProcess);
+          log.debug(() => "\n" + JSON.stringify(({ ProcessedBlockNumber: bnToProcess.toString(), CurrentBlockNumber: currbn.toString(), JobId: job.id, JobName: job.name, Message: "success", data: job} as LogMessage)) + "\n")
+          bnToProcess++;
+          noMoreBlockToProcessNotified = false;
+        } else {
+          if (!noMoreBlockToProcessNotified) {
+            log.info(()=> `No more blocks to process | current block number ${currbn.toString()} \n`);
+            noMoreBlockToProcessNotified = true;
+          }
+        }
+    }catch (e: any) {
+        throw (e);
+    }
   }, { connection, autorun: false } );
 
   importW.run();
 
-  importW.on('completed', (job: Job, returnvalue: any) => {
-    log.debug(() => JSON.stringify(({ JobId: job.id, JobName: job.name, Message: "success", data: job} as LogMessage)))
+  importW.on('completed', async (job: Job, returnvalue: any) => {
+
   });
 
-  importW.on('failed', (job: Job | undefined, error: Error) => {
+  importW.on('failed', async (job: Job | undefined, error: Error) => {
     if(job) {
-      log.error(() => JSON.stringify(({ JobId: (job as Job).id, JobName: job.name, Message: error, Data: (job as Job)} as LogMessage)))
+      const currbn = await importJob.hardhatNodeServices.blockNumber;
+      log.error(() => "\n" + JSON.stringify(({ ProcessedBlockNumber: bnToProcess.toString(), CurrentBlockNumber: currbn.toString(), JobId: (job as Job).id, JobName: job.name, Message: error, Data: (job as Job)} as LogMessage)) + "\n")
     }
+    log.info(()=> `${importQ.name} paused due to an error above \n`);
+    await importQ.pause();
   });
 }
