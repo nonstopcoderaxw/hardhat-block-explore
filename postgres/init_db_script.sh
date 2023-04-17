@@ -12,8 +12,12 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
 	\c hh_raw;
 	GRANT ALL ON SCHEMA public to $POSTGRES_USER1;
 	set role $POSTGRES_USER1;
-	CREATE TABLE account(
-		address char(32) PRIMARY KEY,
-		balance integer NOT NULL
-	);
+	
+	\c postgres;
+	CREATE DATABASE hh_raw_dev;
+	GRANT ALL PRIVILEGES ON DATABASE hh_raw_dev TO $POSTGRES_USER1;
+	\c hh_raw_dev;
+	GRANT ALL ON SCHEMA public to $POSTGRES_USER1;
+	set role $POSTGRES_USER1;
+	
 EOSQL

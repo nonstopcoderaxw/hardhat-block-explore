@@ -4,7 +4,6 @@ import { PrismaClientServices } from "./PrismaClientServices";
 import { HardhatNodeServices, EnhancedBlock } from "./HardhatNodeServices";
 import { Account, TransactionReceipt } from '@prisma/client';
 
- 
 // Summary:
 // Import: hardhat raw data into db
 // Transform: transform db data to UI friendly(aka. graphql)
@@ -106,57 +105,57 @@ export class ImportJob {
 			// create block, with transaction, with receipt, with log
 			const enhancedBlock: EnhancedBlock = await this.hardhatNodeServices.getEnhancedBlock(bn);
 			const data = {
-				number: enhancedBlock.block.number,
-				baseFeePerGas: BigInt(enhancedBlock.block.baseFeePerGas as bigint),
-			  	difficulty: BigInt(enhancedBlock.block.difficulty),
+				number: enhancedBlock.block.number.toString(),
+				baseFeePerGas: (enhancedBlock.block.baseFeePerGas as bigint).toString(),
+			  	difficulty: enhancedBlock.block.difficulty.toString(),
 			  	extraData: enhancedBlock.block.extraData,
-			  	gasLimit: BigInt(enhancedBlock.block.gasLimit),
-			  	gasUsed: BigInt(enhancedBlock.block.gasUsed),
+			  	gasLimit: enhancedBlock.block.gasLimit.toString(),
+			  	gasUsed: enhancedBlock.block.gasUsed.toString(),
 			  	hash: enhancedBlock.block.hash as string,
 			  	miner: enhancedBlock.block.miner,
 			  	nonce: enhancedBlock.block.nonce,
 			  	parentHash: enhancedBlock.block.parentHash,
-			  	timestamp: enhancedBlock.block.timestamp,
+			  	timestamp: enhancedBlock.block.timestamp.toString(),
 				transactions: {
 					create: 
 						enhancedBlock.transactions.map((item, i) => {
 							return {
-							  	chainId: BigInt(item.chainId),
+							  	chainId: item.chainId.toString(),
 							 	data: item.data,
 							  	from: item.from,
-							  	gasLimit: BigInt(item.gasLimit),
-							  	gasPrice: BigInt(item.gasPrice),
-							  	maxFeePerGas: BigInt(item.maxFeePerGas as bigint),
-							  	maxPriorityFeePerGas: BigInt(item.maxPriorityFeePerGas as bigint),
-							  	nonce: item.nonce,
+							  	gasLimit: item.gasLimit.toString(),
+							  	gasPrice: item.gasPrice.toString(),
+							  	maxFeePerGas: (item.maxFeePerGas as bigint).toString(),
+							  	maxPriorityFeePerGas: (item.maxPriorityFeePerGas as bigint).toString(),
+							  	nonce: item.nonce.toString(),
 							  	to: item.to,
-							  	type: item.type,
-							  	value: BigInt(item.value),
+							  	type: item.type.toString(), 
+							  	value: item.value.toString(),
 							  	r: item.signature.r,
 							  	s: item.signature.s,
-							  	v: item.signature.v,
+							  	v: item.signature.v.toString(),
 								transactionReceipt: {
 									create: {
 										hash: enhancedBlock.transactionReceipts[i].hash,
 										blockHash: enhancedBlock.transactionReceipts[i].blockHash,
-									  	blockNumber: enhancedBlock.transactionReceipts[i].blockNumber,
+									  	blockNumber: enhancedBlock.transactionReceipts[i].blockNumber.toString(),
 									  	contractAddress: enhancedBlock.transactionReceipts[i].contractAddress,
-									  	cumulativeGasUsed: BigInt(enhancedBlock.transactionReceipts[i].cumulativeGasUsed),
+									  	cumulativeGasUsed: enhancedBlock.transactionReceipts[i].cumulativeGasUsed.toString(),
 									  	from: enhancedBlock.transactionReceipts[i].from,
-									  	gasPrice: BigInt(enhancedBlock.transactionReceipts[i].gasPrice),
-									  	gasUsed: BigInt(enhancedBlock.transactionReceipts[i].gasUsed),
-									  	index: enhancedBlock.transactionReceipts[i].index,
+									  	gasPrice: enhancedBlock.transactionReceipts[i].gasPrice.toString(),
+									  	gasUsed: enhancedBlock.transactionReceipts[i].gasUsed.toString(),
+									  	index: enhancedBlock.transactionReceipts[i].index.toString(),
 									  	logsBloom: enhancedBlock.transactionReceipts[i].logsBloom,
-									  	status: Number(enhancedBlock.transactionReceipts[i].status as number),
+									  	status: (enhancedBlock.transactionReceipts[i].status as number).toString(),
 									  	to: enhancedBlock.transactionReceipts[i].to,
 										logs: {
 											create:
 												enhancedBlock.transactionReceipts[i].logs.map((_item) => {
 													return {														
-														index: _item.index,
-														transactionIndex: _item.transactionIndex,
+														index: _item.index.toString(),
+														transactionIndex: _item.transactionIndex.toString(),
 														blockHash: _item.blockHash,
-													  	blockNumber: _item.blockNumber,
+													  	blockNumber: _item.blockNumber.toString(),
 													  	address: _item.address,
 													  	data: _item.data,
 													  	topics: _item.topics as string[]
@@ -194,7 +193,7 @@ export class ImportJob {
 				where: {
 					AND: [
 						{ 
-							blockNumber: { equals: bn } 
+							blockNumber: { equals: bn.toString() } 
 						}, 
 						{ 
 							contractAddress: { not: null } 

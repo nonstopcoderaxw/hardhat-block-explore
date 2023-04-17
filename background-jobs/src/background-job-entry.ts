@@ -5,6 +5,7 @@ import { HardhatNodeServices } from "./HardhatNodeServices";
 import { PrismaClient, Account } from '@prisma/client';
 import { PrismaClientServices } from "./PrismaClientServices";
 import { backgroundJobLog as log } from "./log.config";
+import { prisma } from "./prismaClient";
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -24,8 +25,8 @@ async function main() {
       maxRetriesPerRequest: 0
   });
 
-  var bnToProcess: bigint;
-  var noMoreBlockToProcessNotified: boolean;
+  var bnToProcess: bigint = 0n;
+  var noMoreBlockToProcessNotified: boolean = false;
   if (process.env.FROM_FIRST_BLOCK == "0") {
     bnToProcess = HardhatNodeServices.getFirstBlockNumber();
   }
@@ -49,14 +50,14 @@ async function main() {
   
   const importJob = new ImportJob(
     new HardhatNodeServices(process.env.NODE_ENDPOINT as string), 
-    new PrismaClientServices(new PrismaClient())
+    new PrismaClientServices(prisma)
   );
 
   const importW = new Worker("importQueue", async (job: Job) => {
     try{
 
         // check currentbn and lastbn
-        const currbn = await importJob.hardhatNodeServices.blockNumber;
+        const currbn: bigint = await importJob.hardhatNodeServices.blockNumber;
 
         if ( currbn >= bnToProcess ) {
           await importJob.importJobExec(bnToProcess);

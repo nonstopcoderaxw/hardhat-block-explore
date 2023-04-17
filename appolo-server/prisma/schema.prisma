@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_URL_PROD")
 }
 
 model Account {
@@ -19,23 +19,23 @@ model Account {
 model Transaction {
   hash String @id
   block Block @relation(fields: [blockNumber], references: [number], onDelete: Cascade)
-  blockNumber BigInt
+  blockNumber String
   transactionReceipt TransactionReceipt @relation(fields: [hash], references: [hash], onDelete: Cascade)
 
-  chainId BigInt
+  chainId String
   data String
   from String
-  gasLimit BigInt
-  gasPrice BigInt
-  maxFeePerGas BigInt
-  maxPriorityFeePerGas BigInt
-  nonce BigInt
+  gasLimit String
+  gasPrice String
+  maxFeePerGas String
+  maxPriorityFeePerGas String
+  nonce String
   to String?
-  type BigInt
-  value BigInt
+  type String
+  value String
   r String
   s String
-  v BigInt
+  v String
 }
 
 model TransactionReceipt {
@@ -44,26 +44,26 @@ model TransactionReceipt {
   logs Log[]
 
   blockHash String
-  blockNumber BigInt
+  blockNumber String
   contractAddress String?
-  cumulativeGasUsed BigInt
+  cumulativeGasUsed String
   from String
-  gasPrice BigInt
-  gasUsed BigInt
-  index BigInt
+  gasPrice String
+  gasUsed String
+  index String
   logsBloom String
-  status BigInt
+  status String
   to String?
 }
 
 model Log {
   transactionHash String
-  transactionIndex BigInt
+  transactionIndex String
   transactionReceipt TransactionReceipt @relation(fields: [transactionHash], references: [hash], onDelete: Cascade)
-  index BigInt
+  index String
 
   blockHash String
-  blockNumber BigInt
+  blockNumber String
   address String
   data String
   topics String[]
@@ -73,17 +73,17 @@ model Log {
 
 
 model Block {
-  number BigInt @id
+  number String @id
   transactions Transaction[]
 
-  baseFeePerGas BigInt
-  difficulty BigInt
+  baseFeePerGas String
+  difficulty String
   extraData String
-  gasLimit BigInt
-  gasUsed BigInt
+  gasLimit String
+  gasUsed String
   hash String
   miner String
   nonce String
   parentHash String
-  timestamp BigInt
+  timestamp String
 }

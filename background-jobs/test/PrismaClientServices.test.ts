@@ -3,6 +3,8 @@ import { PrismaClientServices } from "../src/PrismaClientServices";
 import { ImportJob } from "../src/Jobs";
 import { Address } from "./Address";
 import { PrismaClient, Account } from '@prisma/client';
+import { prismaDEV } from "./prismaClientDEV";
+import { TestData } from "./TestData";
 
 
 // This require database connection!
@@ -10,15 +12,20 @@ describe("prisma-client-services.test.ts", () => {
 	let services: PrismaClientServices;
 	let importJob: ImportJob;
 	let addresses: Address[];
+	let testData: TestData;
+
 
 	beforeAll(async () => {
-		services = new PrismaClientServices(new PrismaClient());
+		const prisma = prismaDEV;
+		testData = new TestData(process.env.NODE_ENDPOINT, prisma);
+
+		services = new PrismaClientServices(prisma);
 		importJob = new ImportJob();
 		let signers = File.readAsJson("./test/data/signers.json");
 	    addresses = importJob.getAddresses(signers);
 
 	    // delete test data if any
-	    await services.delete.accounts(addresses);
+	    await testData.cleardb();
 	});
  	
 	test('#create.accounts', async () => {
@@ -29,7 +36,7 @@ describe("prisma-client-services.test.ts", () => {
 
 	afterAll(async () => {
 		// clear test records
-		await services.delete.accounts(addresses);
+	    await testData.cleardb();
 	})
 })
 

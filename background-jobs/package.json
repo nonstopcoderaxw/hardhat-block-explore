@@ -30,9 +30,11 @@
     "typescript-logging-category-style": "2.1.0"
   },
   "scripts": {
-    "background:start": "ts-node ./src/background-job-entry.ts",
-    "mock:generate:data": "ts-node ./test/generate-mock-data.ts",
-    "mock:delete:data": "ts-node ./test/delete-all-data.ts",
+    "background:restart": "FROM_FIRST_BLOCK=0 ts-node ./src/background-job-entry.ts",
+    "background:continue": "FROM_FIRST_BLOCK=1 ts-node ./src/background-job-entry.ts",
+    "mock:generate:data:dev": "ts-node ./test/generate-mock-data.ts",
+    "delete:data:prod": "ts-node ./src/db/delete-all-data.ts",
+    "delete:data:dev": "ts-node ./test/delete-all-data.ts",
     "ts:start:dev": "npx nodemon",
     "ts:rebuild": "rimraf ./build && tsc --project tsconfig.build.json", 
     "ts:build": "tsc -w --project tsconfig.build.json", 

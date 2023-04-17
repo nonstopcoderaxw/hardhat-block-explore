@@ -96,7 +96,6 @@ export class HardhatNodeServices {
 
 	static getFirstBlockNumber(): bigint {
 		if (process.env.FORKING == "true" && !process.env.BLOCK_NUMBER) throw (new Error("Block_Number_Not_Set"));
-		
 		if(process.env.FORKING == "false") return BigInt(0);
 		
 		return BigInt(process.env.BLOCK_NUMBER as string) + BigInt(1);

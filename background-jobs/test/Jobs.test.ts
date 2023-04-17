@@ -2,10 +2,11 @@ import { ImportJob } from "../src/Jobs"
 import { Address } from "../src/Address";
 import { File } from "./utils/utils";
 import { PrismaClientServices } from "../src/PrismaClientServices";
-import { cleardb } from "./test-data-funcs";
 import { HardhatNodeServices, EnhancedBlock } from "../src/HardhatNodeServices";
-import { PrismaClient, Account } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { TransactionReceipt, TransactionResponse, Block } from "ethers";
+import { prismaDEV } from "./prismaClientDEV";
+import { TestData } from "./TestData";
 
 jest.mock("../src/HardhatNodeServices");
 
@@ -25,18 +26,22 @@ describe("Jobs.test.ts", () => {
 	let prismaClientServices: PrismaClientServices;
 	let hardhatNodeServices: HardhatNodeServices;
 	let importJob: ImportJob;
+	let testData: TestData;
 
 	beforeAll(async () => {
-		prismaClientServices = new PrismaClientServices(new PrismaClient());
+		const prisma = prismaDEV;
+		testData = new TestData(process.env.NODE_ENDPOINT, prisma);
+
+		prismaClientServices = new PrismaClientServices(prisma);
 		importJob = new ImportJob(new HardhatNodeServices(""), prismaClientServices);
 	})
 
 	beforeEach(async () => {
-		await cleardb(false);		
+		await testData.cleardb(false);		
 	})
 
 	test('getAddresses', async () => {
-		const signers = File.readAsJson("./test/data/signers.json");
+			const signers = File.readAsJson("./test/data/signers.json");
 	    const addresses = importJob.getAddresses(signers);
 
 	    expect(addresses).toBeDefined();
@@ -69,13 +74,18 @@ describe("Jobs.test.ts", () => {
 
 	test("createContracts", async() => {
 		await importJob.importJobExec(0);
-		await expect(importJob.createContracts(32)).resolves.not.toThrow();
+		await expect(importJob.createContracts(35)).resolves.not.toThrow();
 		await expect(importJob.prismaClientServices.prisma.account.findMany({
 			where: {
 				isContract: true
 			}
 		})).resolves.toHaveLength(1);
 
+	})
+
+	afterAll(async () => {
+		// clear test records
+	    await testData.cleardb();
 	})
 
 })
