@@ -1,9 +1,11 @@
 import { EtherscanApiRequest } from "./EtherscanApiRequest";
 import { Redis } from "ioredis";
+import { Address } from "./Address";
+
 
 export type ABIResponse = {
 	abi: Object,
-	fromCache: boolean
+	cache: boolean
 }
 
 export class ABIServices {
@@ -23,7 +25,7 @@ export class ABIServices {
 				abi = JSON.parse((await redis.hget("abi:external", address)) as string);
 				if (abi) {
 					await redis.quit();
-					return { abi: abi, fromCache: true };
+					return { abi: abi, cache: true };
 				}
 			}
 
@@ -34,13 +36,30 @@ export class ABIServices {
 					// cache
 					await redis.hmset("abi:external", address, JSON.stringify(abi));
 					await redis.quit();
-					return { abi: abi, fromCache: false };
+					return { abi: abi, cache: false };
 				}
 			}
 			
 			return null;
 		} catch (e: any) {
 			throw (e);
+		}
+	}
+
+	// function: import ABI from HH
+	static async importABIs(addresses: Address[], names: string[], abis: string[]): Promise<void> {
+		try {
+			const redis = new Redis();
+
+			for (let i = 0; i < addresses.length; i++) {
+				const item = addresses[i];
+				await redis.hmset("abi:internal:names", item.value, names[i]);
+				await redis.hmset("abi:internal:abis", item.value, abis[i]);
+			}
+						
+			await redis.quit();
+		} catch (e: any) {
+			throw (new Error(e));
 		}
 	}
 

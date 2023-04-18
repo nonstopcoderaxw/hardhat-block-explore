@@ -34,13 +34,13 @@ describe("ABIServices.test.ts", () => {
 
 		await redis.quit();
 
-		await expect(abiServices.findABI(address, { cache: true })).resolves.toHaveProperty("fromCache", false);
+		await expect(abiServices.findABI(address, { cache: true })).resolves.toHaveProperty("cache", false);
 		expect(mock.findABI).toHaveBeenCalledTimes(1);
 
-		await expect(abiServices.findABI(address, { cache: true })).resolves.toHaveProperty("fromCache", true);
+		await expect(abiServices.findABI(address, { cache: true })).resolves.toHaveProperty("cache", true);
 		expect(mock.findABI).toHaveBeenCalledTimes(1);
 
-		await expect(abiServices.findABI(address, { cache: false })).resolves.toHaveProperty("fromCache", false)
+		await expect(abiServices.findABI(address, { cache: false })).resolves.toHaveProperty("cache", false)
 		expect(mock.findABI).toHaveBeenCalledTimes(2);
 
 		await expect(ABIServices.clearCache()).resolves.not.toThrow();

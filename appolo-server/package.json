@@ -22,6 +22,8 @@
     "@jest/globals": "^29.5.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.14.6",
+    "ethers": "^6.1.0",
+
 
     "axios": "^1.3.5",
     "dotenv": "^16.0.3",
@@ -29,10 +31,12 @@
     "nodemon": "^2.0.4"
   },
   "scripts": {
-    "server:start:dev": "nodemon src/index.ts",
+    "mock:generate:data:dev": "npx ts-node ./test/generate-mock-data-dev.ts",
+    "server:start:prod": "PROD=true ts-node src/index.ts",
+    "server:start:dev": "PROD=false ts-node src/index.ts",
     "ts:rebuild": "rimraf ./build && tsc --project tsconfig.build.json", 
     "ts:build": "tsc -w --project tsconfig.build.json", 
-    "ts:test": "jest",
+    "graphql:test": "jest",
     "prisma:generate": "npx prisma generate"
   }
 }

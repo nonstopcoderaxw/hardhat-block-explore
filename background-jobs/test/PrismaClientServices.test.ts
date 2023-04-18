@@ -3,7 +3,7 @@ import { PrismaClientServices } from "../src/PrismaClientServices";
 import { ImportJob } from "../src/Jobs";
 import { Address } from "./Address";
 import { PrismaClient, Account } from '@prisma/client';
-import { prismaDEV } from "./prismaClientDEV";
+import { prisma } from "./prismaDEV";
 import { TestData } from "./TestData";
 
 
@@ -16,7 +16,6 @@ describe("prisma-client-services.test.ts", () => {
 
 
 	beforeAll(async () => {
-		const prisma = prismaDEV;
 		testData = new TestData(process.env.NODE_ENDPOINT, prisma);
 
 		services = new PrismaClientServices(prisma);
@@ -25,7 +24,7 @@ describe("prisma-client-services.test.ts", () => {
 	    addresses = importJob.getAddresses(signers);
 
 	    // delete test data if any
-	    await testData.cleardb();
+	    await testData.cleardb(false);
 	});
  	
 	test('#create.accounts', async () => {
@@ -36,7 +35,7 @@ describe("prisma-client-services.test.ts", () => {
 
 	afterAll(async () => {
 		// clear test records
-	    await testData.cleardb();
+	    await testData.cleardb(false);
 	})
 })
 

@@ -7,7 +7,7 @@ export const typeDefs = gql`
     account(address: ID!): Account!
 
     contracts: [Account!]!
-    contact(address: ID!): Account!
+    contract(address: ID!): Account!
 
     transactions: [Transaction]!
     transaction(hash: ID!): Transaction!
@@ -15,10 +15,16 @@ export const typeDefs = gql`
     blocks: [Block]!
     block(number: ID!): Block!
 
-    transactionReceipts: [TransactionReceipt]!
-    transactionReceipt(hash: ID!): TransactionReceipt!
-
+    abi(address: String!, cache: Boolean!): String!
   }
+
+  type Mutation {
+    importABIs(addresses: [String]!, names: [String]!, abis: [String]!): RestResponse!
+  }
+
+  type RestResponse {
+    status: String!
+  } 
 
   type Account {
   	address: ID!
@@ -66,7 +72,7 @@ export const typeDefs = gql`
   type TransactionReceipt {
   	hash: ID!
   	logs: [Log]!
-	blockHash: String!
+	  blockHash: String!
     blockNumber: String!
     contractAddress: String
     cumulativeGasUsed: String!

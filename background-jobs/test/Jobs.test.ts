@@ -5,7 +5,7 @@ import { PrismaClientServices } from "../src/PrismaClientServices";
 import { HardhatNodeServices, EnhancedBlock } from "../src/HardhatNodeServices";
 import { PrismaClient } from '@prisma/client';
 import { TransactionReceipt, TransactionResponse, Block } from "ethers";
-import { prismaDEV } from "./prismaClientDEV";
+import { prisma } from "./prismaDEV";
 import { TestData } from "./TestData";
 
 jest.mock("../src/HardhatNodeServices");
@@ -29,7 +29,6 @@ describe("Jobs.test.ts", () => {
 	let testData: TestData;
 
 	beforeAll(async () => {
-		const prisma = prismaDEV;
 		testData = new TestData(process.env.NODE_ENDPOINT, prisma);
 
 		prismaClientServices = new PrismaClientServices(prisma);
@@ -85,7 +84,7 @@ describe("Jobs.test.ts", () => {
 
 	afterAll(async () => {
 		// clear test records
-	    await testData.cleardb();
+	    await testData.cleardb(false);
 	})
 
 })

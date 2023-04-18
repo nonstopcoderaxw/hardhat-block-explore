@@ -19,6 +19,7 @@
     "@types/jest": "^29.5.0"  
   },
   "scripts": {
+    "save:db:prod": "npx ts-node ./src/db/save-db-prod.ts",
     "ts:start:dev": "npx nodemon",
     "ts:rebuild": "rimraf ./build && tsc --project tsconfig.build.json", 
     "ts:build": "tsc --project tsconfig.build.json", 
