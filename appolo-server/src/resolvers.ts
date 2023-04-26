@@ -45,25 +45,65 @@ export const resolvers = {
     },
 
     transactions: (_: any, __: any, { dataSources }: any) => {
-      return dataSources.prisma.transaction.findMany({});
+      return dataSources.prisma.transaction.findMany({
+        include: {
+          transactionReceipt: {
+            include: {
+              logs: true
+            }
+          }, 
+          block: true
+        }
+      });
     },
 
     transaction: (_: any, { hash }: any, { dataSources }: any) => {
       return dataSources.prisma.transaction.findUnique({
         where: {
           hash: hash
+        },
+        include: {
+          transactionReceipt: {
+            include: {
+              logs: true
+            }
+          },
+          block: true
         }
       });
     },
 
     blocks: (_: any, __: any, { dataSources }: any) => {
-      return dataSources.prisma.block.findMany({});
+      return dataSources.prisma.block.findMany({
+        include: {
+          transactions: {
+            include: {
+              transactionReceipt: {
+                include: {
+                  logs: true
+                }
+              }
+            }
+          }
+        }
+      });
     },
 
     block: (_: any, { number }: any, { dataSources }: any) => {
       return dataSources.prisma.block.findUnique({
         where: {
           number: number
+        },
+        include: {
+          transactions: {
+            include: {
+              transactionReceipt: {
+                include: {
+                  logs: true
+                }
+              }
+            }
+          }
         }
       });
     },
@@ -93,29 +133,30 @@ export const resolvers = {
       return dataSources.prisma.transaction.findMany({
         where: {
           from: address
+        }, 
+        include: {
+          transactionReceipt: {
+            include: {
+              logs: true
+            }
+          }
         }
       })
     }
   },
 
   Transaction: {
-    transactionReceipt: ({ hash }: any, __: any, { dataSources }: any) => {
-      return dataSources.prisma.transactionReceipt.findUnique({
-        where: {
-          hash: hash
-        }
-      })
-    }
+    
   },
 
   TransactionReceipt: {
-    logs: ({ hash }: any, __: any, { dataSources }: any) => {
-      return dataSources.prisma.log.findMany({
-        where: {
-          transactionHash: hash
-        }
-      })
-    }
+    // logs: ({ hash }: any, __: any, { dataSources }: any) => {
+    //   return dataSources.prisma.log.findMany({
+    //     where: {
+    //       transactionHash: hash
+    //     }
+    //   })
+    // }
   },
 
   Log: {},

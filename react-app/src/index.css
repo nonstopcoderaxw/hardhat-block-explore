@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.override-combobox-width {
+  width: 410px;
+}
+
+.override-break-word {
+  overflow-wrap: break-word;
+}
+
+.top-4rem {
+  top: 4rem;
+}
+
+.top-54px {
+  top: 54px;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.scrollable {
+  overflow-y: scroll; 
+}
+
+.unscrollable {
+  overflow-y:hidden;
+    overflow-x:hidden;
+}
+
+.full-screen-height-left {
+  height: 920px;
+}
+
+.full-screen-height-right {
+  height: 840px;
+}
