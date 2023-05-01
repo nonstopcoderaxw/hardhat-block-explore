@@ -1,11 +1,36 @@
 import { EtherscanApiRequest } from "./EtherscanApiRequest";
 import { Redis } from "ioredis";
 import { Address } from "./Address";
+import ABIDecoder from "abi-decoder-typescript"
+import erc20 from "./abis/ERC20.json";
+import erc721 from "./abis/ERC721.json";
 
+// preload abis - ERC20, ERC721
+const abiDecoder = new ABIDecoder();
+abiDecoder.addABI(erc20);
+abiDecoder.addABI(erc721);
 
 export type ABIResponse = {
 	abi: Object,
 	cache: boolean
+}
+
+export type Log = {
+	address: string,
+	data: string, 
+	topics: string[]
+}
+
+export type DecodedLog = {
+	name: string,
+	events: EventData[],
+	address: string
+}
+
+export type EventData = {
+	name: string, 
+	type: string,
+	value: string
 }
 
 export class ABIServices {
@@ -21,7 +46,15 @@ export class ABIServices {
 			const redis = new Redis();
 			var abi: Object | undefined;
 
+			// find from cache
 			if (options.cache) {
+				// find from internal
+				abi = JSON.parse((await redis.hget("abi:internal:abis", address)) as string);
+				if (abi) {
+						await redis.quit();
+						return { abi: abi, cache: true };
+				}
+				
 				abi = JSON.parse((await redis.hget("abi:external", address)) as string);
 				if (abi) {
 					await redis.quit();
@@ -42,6 +75,28 @@ export class ABIServices {
 			
 			return null;
 		} catch (e: any) {
+			throw (e);
+		}
+	}
+
+	// function: decode log
+	// return: null when no abi found for decoding
+	// return: array for decoded logs
+	async decodeLogs(fromAddresses: Address[], logs: Log[]): Promise<DecodedLog[] | null> {
+		try {
+			for(let i = 0; i < fromAddresses.length; i++) {
+				let abiRes: ABIResponse | null;
+				try {
+					abiRes = await this.findABI(fromAddresses[i].value);
+				} catch {
+					abiRes = null;
+				}
+				if (!abiRes) continue;
+				abiDecoder.addABI(JSON.parse(JSON.stringify(abiRes.abi)));
+			}
+
+			return abiDecoder.decodeLogs(logs);
+		} catch (e) {
 			throw (e);
 		}
 	}

@@ -1,0 +1,11 @@
+query account($address: ID!) {
+  account(address: $address) {
+    address
+    balance
+    transactions {
+      hash
+      nonce
+      from
+    }
+  }
+}

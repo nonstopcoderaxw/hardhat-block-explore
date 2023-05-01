@@ -1,0 +1,21 @@
+query combo1 {
+  accounts{
+    address
+    balance
+  }
+  contracts{
+    address
+    balance
+  }
+  transactions {
+    hash
+    block {
+      number
+      timestamp
+    }
+  }
+  blocks {
+    number
+    timestamp
+  }
+}

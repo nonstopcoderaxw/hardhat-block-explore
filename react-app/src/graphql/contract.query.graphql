@@ -1,0 +1,11 @@
+query contract($address: ID!) {
+  contract(address: $address) {
+    address
+    balance
+    transactions {
+      hash
+      nonce
+      from
+    }
+  }
+}

@@ -27,19 +27,19 @@
     "bullmq": "^3.10.2",
     "dotenv": "^16.0.3",
     "typescript-logging": "2.1.0",
-    "typescript-logging-category-style": "2.1.0"
+    "typescript-logging-category-style": "2.1.0",
+    "axios": "^1.3.6"
   },
   "scripts": {
-    "background:restart": "FROM_FIRST_BLOCK=0 ts-node ./src/background-job-entry.ts",
-    "background:continue": "FROM_FIRST_BLOCK=1 ts-node ./src/background-job-entry.ts",
+    "background:restart": "yarn delete:data:prod && FROM_FIRST_BLOCK=0 ts-node ./src/background-job-entry.ts",
     "mock:generate:data:dev": "ts-node ./test/generate-mock-data.ts",
     "delete:data:prod": "ts-node ./src/db/delete-all-data.ts",
-    "delete:data:dev": "ts-node ./test/delete-all-data.ts",
+    "delete:data:dev": "ts-node ./test/delete-all-data-dev.ts",
     "ts:start:dev": "npx nodemon",
     "ts:rebuild": "rimraf ./build && tsc --project tsconfig.build.json", 
     "ts:build": "tsc -w --project tsconfig.build.json", 
     "ts:run-script": "ts-node",
-    "ts:test": "jest",
+    "ts:test": "npx tsc && jest",
     "prisma:generate": "npx prisma generate"
   }
 }

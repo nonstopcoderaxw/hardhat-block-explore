@@ -21,10 +21,11 @@
     "typescript-logging": "2.1.0",
     "typescript-logging-category-style": "2.1.0",
     "ethers": "^6.1.0",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "abi-decoder-typescript": "3.0.0"
   },
   "scripts": {
     "express:start": "ts-node ./src/index.ts",
-    "ts:test": "jest"
+    "ts:test": "tsc && jest"
   }
 }

@@ -1,0 +1,19 @@
+query block($number: ID!) {
+  block(number: $number) {
+    number
+    baseFeePerGas
+    difficulty
+    extraData
+    gasLimit
+    gasUsed
+    hash
+    miner
+    nonce
+    parentHash
+    timestamp
+    transactions {
+      hash
+      from
+    }
+  }
+}

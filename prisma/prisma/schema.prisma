@@ -19,23 +19,23 @@ model Account {
 model Transaction {
   hash String @id
   block Block @relation(fields: [blockNumber], references: [number], onDelete: Cascade)
-  blockNumber String
+  blockNumber BigInt
   transactionReceipt TransactionReceipt @relation(fields: [hash], references: [hash], onDelete: Cascade)
 
-  chainId String
+  chainId BigInt
   data String
   from String
   gasLimit String
   gasPrice String
   maxFeePerGas String
   maxPriorityFeePerGas String
-  nonce String
+  nonce BigInt
   to String?
-  type String
+  type BigInt
   value String
   r String
   s String
-  v String
+  v BigInt
 }
 
 model TransactionReceipt {
@@ -44,13 +44,13 @@ model TransactionReceipt {
   logs Log[]
 
   blockHash String
-  blockNumber String
+  blockNumber BigInt
   contractAddress String?
   cumulativeGasUsed String
   from String
   gasPrice String
   gasUsed String
-  index String
+  index BigInt
   logsBloom String
   status String
   to String?
@@ -60,20 +60,22 @@ model Log {
   transactionHash String
   transactionIndex String
   transactionReceipt TransactionReceipt @relation(fields: [transactionHash], references: [hash], onDelete: Cascade)
-  index String
+  index BigInt
 
   blockHash String
-  blockNumber String
+  blockNumber BigInt
   address String
   data String
   topics String[]
+
+  decodedLogs Json?
 
   @@id([transactionHash, index])
 }
 
 
 model Block {
-  number String @id
+  number BigInt @id
   transactions Transaction[]
 
   baseFeePerGas String
@@ -83,7 +85,7 @@ model Block {
   gasUsed String
   hash String
   miner String
-  nonce String
+  nonce BigInt
   parentHash String
-  timestamp String
+  timestamp BigInt
 }

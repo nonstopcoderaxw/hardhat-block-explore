@@ -4,18 +4,18 @@ import { gql } from "graphql-tag";
 export const typeDefs = gql`
   type Query {
     accounts: [Account!]!
-    account(address: ID!): Account!
+    account(address: ID!): Account
 
     contracts: [Account!]!
-    contract(address: ID!): Account!
+    contract(address: ID!): Account
 
     transactions: [Transaction]!
-    transaction(hash: ID!): Transaction!
+    transaction(hash: ID!): Transaction
 
     blocks: [Block]!
-    block(number: ID!): Block!
+    block(number: ID!): Block
 
-    abi(address: String!, cache: Boolean!): String!
+    abi(address: String!, cache: Boolean!): String
   }
 
   type Mutation {
@@ -37,21 +37,21 @@ export const typeDefs = gql`
   	hash: ID!
   	block: Block!
   	from: String!
-  	blockNumber: String!
+  	blockNumber: Int!
   	transactionReceipt: TransactionReceipt!
-  	chainId: String!
+  	chainId: Int!
   	data: String!
   	gasLimit: String!
   	gasPrice: String!
   	maxFeePerGas: String!
   	maxPriorityFeePerGas: String!
-  	nonce: String!
+  	nonce: Int!
   	to: String
-  	type: String!
+  	type: Int!
   	value: String!
   	r: String!
   	s: String!
-  	v: String!
+  	v: Int!
   }
 
   type Block {
@@ -64,16 +64,16 @@ export const typeDefs = gql`
   	gasUsed: String!
   	hash: String!
   	miner: String!
-  	nonce: String!
+  	nonce: Int!
   	parentHash: String!
-  	timestamp: String!
+  	timestamp: Int!
   }
 
   type TransactionReceipt {
   	hash: ID!
   	logs: [Log]!
 	  blockHash: String!
-    blockNumber: String!
+    blockNumber: Int!
     contractAddress: String
     cumulativeGasUsed: String!
     from: String
@@ -88,11 +88,12 @@ export const typeDefs = gql`
   type Log {
   	transactionHash: String!
   	transactionIndex: String!
-  	index: String!
+  	index: Int!
   	blockHash: String
-  	blockNumber: String!
+  	blockNumber: Int!
   	address: String
   	data: String
   	topics: [String]!
+    decodedLogs: String
   }
 `;

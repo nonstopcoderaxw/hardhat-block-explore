@@ -1,8 +1,16 @@
-import { classNames } from "../utils/utils"
+import { useLocation } from 'react-router-dom';
+import { classNames, getURLParam, URLParam } from "../utils/utils";
 
 export default function Accounts({data}) {
-
+  const urlParam: URLParam = getURLParam(useLocation().hash);
+  
   const items = data;
+
+  const nav = (e) => {
+    e.preventDefault();
+    const address = e.currentTarget.getAttribute("data-address")
+    window.location.hash = `#${urlParam.nab}/${urlParam.oTab}/Account/${address}`
+  }
 
   return (
     <>
@@ -30,12 +38,6 @@ export default function Accounts({data}) {
                     >
                       Balance
                     </th>
-                    <th
-                      scope="col"
-                      className="sticky top-54px z-10 hidden border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter lg:table-cell"
-                    >
-                      Txs
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -47,7 +49,7 @@ export default function Accounts({data}) {
                           'whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 lg:pl-8'
                         )}
                       >
-                        <a href="#" className="hover:bg-gray-50">
+                        <a href="/#" onClick={nav} className="hover:bg-gray-50" data-address={item.address}>
                           {item.address}
                         </a>
                       </td>
@@ -58,14 +60,6 @@ export default function Accounts({data}) {
                         )}
                       >
                         {item.balance}
-                      </td>
-                      <td
-                        className={classNames(
-                          i !== items.length - 1 ? 'border-b border-gray-200' : '',
-                          'whitespace-nowrap hidden px-3 py-4 text-sm text-gray-500 sm:table-cell'
-                        )}
-                      >
-                        {item.numOfTxs}
                       </td>
                     </tr>
                   ))}

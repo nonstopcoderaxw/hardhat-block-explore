@@ -16,19 +16,39 @@ export async function createMockData(): Promise<void> {
 	});
 
 	await prisma.block.createMany({
-		data: blocks
+		data: blocks.map((item: any)=>{
+			item.number = BigInt(item.number);
+			item.timestamp = BigInt(item.timestamp);
+			item.nonce = BigInt(item.nonce);
+			return item;
+		})
 	});
 
 	await prisma.transactionReceipt.createMany({
-		data: transactionReceipts
+		data: transactionReceipts.map((item: any) => {
+			item.blockNumber = BigInt(item.blockNumber)
+			item.index = BigInt(item.index)
+			return item;
+		})
 	});
 
 	await prisma.transaction.createMany({
-		data: transactions
+		data: transactions.map((item: any) => {
+			item.blockNumber = BigInt(item.blockNumber)
+			item.chainId = BigInt(item.chainId)
+			item.nonce = BigInt(item.nonce)
+			item.type = BigInt(item.type)
+			item.v = BigInt(item.v)
+			return item;
+		})
 	});
 
 	await prisma.log.createMany({
-		data: logs
+		data: logs.map((item: any) => {
+			item.index = BigInt(item.index)
+			item.blockNumber = BigInt(item.blockNumber)
+			return item;
+		})
 	});
 
 	console.log("DEV: mock data generated!");

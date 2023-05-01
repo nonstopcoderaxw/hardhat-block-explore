@@ -8,7 +8,7 @@ export class TestData {
 	private prisma: PrismaClient;
 	private hh: HardhatNodeServices;
 
-	constructor(hardhatEndPoint?: string, prisma?: PrismaClient) {
+	constructor(hardhatEndPoint: string, prisma: PrismaClient) {
 		this.hh = new HardhatNodeServices(hardhatEndPoint);;
 		this.prisma = prisma;
 	}

@@ -3,7 +3,7 @@ import { appContextSlice } from "./appContextSlice"
 
 export const store = configureStore({
   reducer: {
-    app: appContextSlice.reducer
+    appState: appContextSlice.reducer
   }
 });
 

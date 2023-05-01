@@ -7,8 +7,10 @@ import { PrismaClient } from '@prisma/client';
 import { TransactionReceipt, TransactionResponse, Block } from "ethers";
 import { prisma } from "./prismaDEV";
 import { TestData } from "./TestData";
+import axios from "axios"
 
 jest.mock("../src/HardhatNodeServices");
+jest.mock('axios');
 
 HardhatNodeServices.mockImplementation(() => {
 	return {
@@ -40,7 +42,7 @@ describe("Jobs.test.ts", () => {
 	})
 
 	test('getAddresses', async () => {
-			const signers = File.readAsJson("./test/data/signers.json");
+		const signers = File.readAsJson("./test/data/signers.json");
 	    const addresses = importJob.getAddresses(signers);
 
 	    expect(addresses).toBeDefined();
@@ -80,6 +82,26 @@ describe("Jobs.test.ts", () => {
 			}
 		})).resolves.toHaveLength(1);
 
+	})
+
+	test("decodeLogs", async () => {
+		const mockDecodeLogs = `{"name":"ContractCreated","events":[{"name":"_address","type":"address","value":"0x73511669fd4de447fed18bb79bafeac93ab7f31f"}],"address":"0x73511669fd4dE447feD18BB79bAFeAC93aB7F31f"}`;
+		axios.post.mockResolvedValue({
+			status: "200",
+			data: mockDecodeLogs
+		});
+
+		await importJob.importJobExec(0);
+		const bn = 35;
+		await expect(importJob.decodeLogs(bn)).resolves.not.toThrow();
+
+		const r = await importJob.prismaClientServices.prisma.log.findMany({
+			where: {
+				blockNumber: bn
+			}
+		})
+
+		expect(r[0].decodedLogs).toEqual(mockDecodeLogs);
 	})
 
 	afterAll(async () => {

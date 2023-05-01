@@ -53,7 +53,12 @@ export const resolvers = {
             }
           }, 
           block: true
-        }
+        },
+        orderBy: [
+          {
+            blockNumber: 'desc',
+          }
+        ],
       });
     },
 
@@ -73,7 +78,7 @@ export const resolvers = {
       });
     },
 
-    blocks: (_: any, __: any, { dataSources }: any) => {
+    blocks: async (_: any, __: any, { dataSources }: any) => {
       return dataSources.prisma.block.findMany({
         include: {
           transactions: {
@@ -85,14 +90,19 @@ export const resolvers = {
               }
             }
           }
-        }
+        },
+        orderBy: [
+          {
+            timestamp: 'desc',
+          }
+        ],
       });
     },
 
     block: (_: any, { number }: any, { dataSources }: any) => {
       return dataSources.prisma.block.findUnique({
         where: {
-          number: number
+          number: BigInt(number)
         },
         include: {
           transactions: {
@@ -126,7 +136,17 @@ export const resolvers = {
    
   },
 
-  Block: {},
+  Block: {
+    nonce: ({ nonce }: any, __: any, { dataSources }: any) => {
+      return Number(nonce.toString())
+    },
+    number: ({ number }: any, __: any, { dataSources }: any) => {
+      return Number(number.toString())
+    },
+    timestamp: ({ timestamp }: any, __: any, { dataSources }: any) => {
+      return Number(timestamp.toString())
+    },
+  },
 
   Account: {
     transactions: ({ address }: any, __: any, { dataSources }: any) => {
@@ -134,32 +154,57 @@ export const resolvers = {
         where: {
           from: address
         }, 
+        orderBy: [
+          {
+            blockNumber: 'desc',
+          }
+        ],
         include: {
           transactionReceipt: {
             include: {
               logs: true
             }
           }
-        }
+        },
       })
     }
   },
 
   Transaction: {
-    
+    blockNumber: ({ blockNumber }: any, __: any, { dataSources }: any) => {
+      return Number(blockNumber.toString())
+    },
+    chainId: ({ chainId }: any, __: any, { dataSources }: any) => {
+      return Number(chainId.toString())
+    },
+    nonce: ({ nonce }: any, __: any, { dataSources }: any) => {
+      return Number(nonce.toString())
+    },
+    type: ({ type }: any, __: any, { dataSources }: any) => {
+      return Number(type.toString())
+    },
+    v: ({ v }: any, __: any, { dataSources }: any) => {
+      return Number(v.toString())
+    },
   },
 
   TransactionReceipt: {
-    // logs: ({ hash }: any, __: any, { dataSources }: any) => {
-    //   return dataSources.prisma.log.findMany({
-    //     where: {
-    //       transactionHash: hash
-    //     }
-    //   })
-    // }
+    blockNumber: ({ blockNumber }: any, __: any, { dataSources }: any) => {
+      return Number(blockNumber.toString())
+    },
+    index: ({ index }: any, __: any, { dataSources }: any) => {
+      return Number(index.toString())
+    },
   },
 
-  Log: {},
+  Log: {
+    blockNumber: ({ blockNumber }: any, __: any, { dataSources }: any) => {
+      return Number(blockNumber.toString())
+    },
+    index: ({ index }: any, __: any, { dataSources }: any) => {
+      return Number(index.toString())
+    },
+  },
 
 
 };

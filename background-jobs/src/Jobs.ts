@@ -1,8 +1,10 @@
+import axios from "axios"
 import { JsonRpcProvider, JsonRpcSigner, TransactionReceipt as Receipt, TransactionResponse, Block} from "ethers";
 import { Address } from "./Address";
 import { PrismaClientServices } from "./PrismaClientServices";
 import { HardhatNodeServices, EnhancedBlock } from "./HardhatNodeServices";
-import { Account, TransactionReceipt } from '@prisma/client';
+import { Account, TransactionReceipt, Log, Prisma } from '@prisma/client';
+
 
 // Summary:
 // Import: hardhat raw data into db
@@ -105,7 +107,7 @@ export class ImportJob {
 			// create block, with transaction, with receipt, with log
 			const enhancedBlock: EnhancedBlock = await this.hardhatNodeServices.getEnhancedBlock(bn);
 			const data = {
-				number: enhancedBlock.block.number.toString(),
+				number: BigInt(enhancedBlock.block.number.toString()),
 				baseFeePerGas: (enhancedBlock.block.baseFeePerGas as bigint).toString(),
 			  	difficulty: enhancedBlock.block.difficulty.toString(),
 			  	extraData: enhancedBlock.block.extraData,
@@ -113,38 +115,38 @@ export class ImportJob {
 			  	gasUsed: enhancedBlock.block.gasUsed.toString(),
 			  	hash: enhancedBlock.block.hash as string,
 			  	miner: enhancedBlock.block.miner,
-			  	nonce: enhancedBlock.block.nonce,
+			  	nonce: BigInt(enhancedBlock.block.nonce),
 			  	parentHash: enhancedBlock.block.parentHash,
-			  	timestamp: enhancedBlock.block.timestamp.toString(),
+			  	timestamp: BigInt(enhancedBlock.block.timestamp.toString()),
 				transactions: {
 					create: 
 						enhancedBlock.transactions.map((item, i) => {
 							return {
-							  	chainId: item.chainId.toString(),
+							  	chainId: BigInt(item.chainId.toString()),
 							 	data: item.data,
 							  	from: item.from,
 							  	gasLimit: item.gasLimit.toString(),
 							  	gasPrice: item.gasPrice.toString(),
 							  	maxFeePerGas: (item.maxFeePerGas as bigint).toString(),
 							  	maxPriorityFeePerGas: (item.maxPriorityFeePerGas as bigint).toString(),
-							  	nonce: item.nonce.toString(),
+							  	nonce: BigInt(item.nonce.toString()),
 							  	to: item.to,
-							  	type: item.type.toString(), 
+							  	type: BigInt(item.type.toString()), 
 							  	value: item.value.toString(),
 							  	r: item.signature.r,
 							  	s: item.signature.s,
-							  	v: item.signature.v.toString(),
+							  	v: BigInt(item.signature.v.toString()),
 								transactionReceipt: {
 									create: {
 										hash: enhancedBlock.transactionReceipts[i].hash,
 										blockHash: enhancedBlock.transactionReceipts[i].blockHash,
-									  	blockNumber: enhancedBlock.transactionReceipts[i].blockNumber.toString(),
+									  	blockNumber: BigInt(enhancedBlock.transactionReceipts[i].blockNumber.toString()),
 									  	contractAddress: enhancedBlock.transactionReceipts[i].contractAddress,
 									  	cumulativeGasUsed: enhancedBlock.transactionReceipts[i].cumulativeGasUsed.toString(),
 									  	from: enhancedBlock.transactionReceipts[i].from,
 									  	gasPrice: enhancedBlock.transactionReceipts[i].gasPrice.toString(),
 									  	gasUsed: enhancedBlock.transactionReceipts[i].gasUsed.toString(),
-									  	index: enhancedBlock.transactionReceipts[i].index.toString(),
+									  	index: BigInt(enhancedBlock.transactionReceipts[i].index.toString()),
 									  	logsBloom: enhancedBlock.transactionReceipts[i].logsBloom,
 									  	status: (enhancedBlock.transactionReceipts[i].status as number).toString(),
 									  	to: enhancedBlock.transactionReceipts[i].to,
@@ -152,10 +154,10 @@ export class ImportJob {
 											create:
 												enhancedBlock.transactionReceipts[i].logs.map((_item) => {
 													return {														
-														index: _item.index.toString(),
+														index: BigInt(_item.index.toString()),
 														transactionIndex: _item.transactionIndex.toString(),
 														blockHash: _item.blockHash,
-													  	blockNumber: _item.blockNumber.toString(),
+													  	blockNumber: BigInt(_item.blockNumber.toString()),
 													  	address: _item.address,
 													  	data: _item.data,
 													  	topics: _item.topics as string[]
@@ -181,6 +183,64 @@ export class ImportJob {
 	async transformJobExec(bn: bigint): Promise<void> {
 		try { 
 			await this.createContracts(bn) 
+			await this.decodeLogs(bn)
+		} catch (e: any) {
+			throw (e);
+		}
+	}
+
+	async decodeLogs(bn: bigint): Promise<void> {
+		// find out all the addresses in logs list
+		// call out
+		// update logs
+		try {
+			const logs: Log[] = await this.prismaClientServices.prisma.log.findMany({
+				where: {
+					blockNumber: bn
+				}
+			})
+
+			const fromListPayload: string[] = [];
+			const logsPayload: object[] = [];
+			logs.map((item: Log) => {
+				fromListPayload.push(item.address);
+				logsPayload.push({
+					address: item.address,
+					data: item.data,
+					topics: item.topics
+				});
+			})
+
+			const res: any = await axios.post(`${process.env.ABI_SERVICES_ENDPOINT}/decodeLogs`, {
+				fromList: fromListPayload, 
+				logs: logsPayload
+			}, {
+    			headers: { 'Content-Type': 'application/json' }
+    		})
+
+			if(res.status != "200") throw (new Error("DECODED_LOGS_REQUEST_FAILED"));
+
+			if(res.data) {
+				const prismaTxOps: Prisma.PrismaPromise<any>[] = [];
+				logs.map((item: Log) => {
+					prismaTxOps.push(
+						this.prismaClientServices.prisma.log.update({
+							where: {
+								transactionHash_index: {
+									transactionHash: item.transactionHash,
+									index: item.index
+								}
+							}, 
+							data: {
+								decodedLogs: res.data
+							}
+						})
+					)
+				})
+
+				await this.prismaClientServices.prisma.$transaction(prismaTxOps);
+			}
+
 		} catch (e: any) {
 			throw (e);
 		}
@@ -192,16 +252,10 @@ export class ImportJob {
 			const contractAddresses: { contractAddress: string | null }[] = await this.prismaClientServices.prisma.transactionReceipt.findMany({
 				where: {
 					AND: [
-						{ 
-							blockNumber: { equals: bn.toString() } 
-						}, 
-						{ 
-							contractAddress: { not: null } 
-						},
-						{ 
-							contractAddress: { not: undefined } 
-						}
-					]
+							{ blockNumber: { equals: bn } }, 
+							{ contractAddress: { not: null } },
+							{ contractAddress: { not: undefined } }
+						 ]
 				},
 				select: {
 					contractAddress: true

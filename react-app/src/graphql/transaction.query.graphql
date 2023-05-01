@@ -1,0 +1,47 @@
+query transaction($hash: ID! = "0x349a325f9efc7a21fd2b9f0efe79a24e516811e6a5a96dabf79e71c466f644cc") {
+  transaction(hash: $hash){
+    blockNumber
+      chainId
+      data
+      from
+      gasLimit
+      gasPrice
+      hash
+      maxFeePerGas
+      maxPriorityFeePerGas
+      nonce
+      r
+      s
+      to
+      transactionReceipt {
+        blockHash
+        blockNumber
+        cumulativeGasUsed
+        contractAddress
+        from
+        gasPrice
+        gasUsed
+        hash
+        index
+        logs {
+          address
+          blockHash
+          blockNumber
+          data
+          index
+          topics
+          transactionHash
+          transactionIndex
+        }
+        logsBloom
+        status
+        to
+      }
+      type
+      v
+      value
+      block {
+        timestamp
+      }
+    }
+  }
