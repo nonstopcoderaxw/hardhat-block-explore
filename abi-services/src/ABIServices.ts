@@ -11,6 +11,7 @@ abiDecoder.addABI(erc20);
 abiDecoder.addABI(erc721);
 
 export type ABIResponse = {
+	name?: string,
 	abi: Object,
 	cache: boolean
 }
@@ -40,7 +41,7 @@ export class ABIServices {
 		this.etherscanApiRequest = etherscanApiRequest;
 	}
 
-	async findABI(address: string, options: { cache: boolean } = { cache: true }): Promise<ABIResponse | null> {
+	async findABI(address: Address, options: { cache: boolean } = { cache: true }): Promise<ABIResponse | null> {
 		// if cache = true, find it from redis, if redis says no, then find from etherscan, then save it into redis
 		try {
 			const redis = new Redis();
@@ -49,13 +50,15 @@ export class ABIServices {
 			// find from cache
 			if (options.cache) {
 				// find from internal
-				abi = JSON.parse((await redis.hget("abi:internal:abis", address)) as string);
+				abi = JSON.parse((await redis.hget("abi:internal:abis", address.value)) as string);
+				const name = (await redis.hget("abi:internal:names", address.value)) as string;
+
 				if (abi) {
-						await redis.quit();
-						return { abi: abi, cache: true };
+					await redis.quit();
+					return { name: name, abi: abi, cache: true };
 				}
 				
-				abi = JSON.parse((await redis.hget("abi:external", address)) as string);
+				abi = JSON.parse((await redis.hget("abi:external", address.value)) as string);
 				if (abi) {
 					await redis.quit();
 					return { abi: abi, cache: true };
@@ -67,7 +70,7 @@ export class ABIServices {
 				abi = await this.etherscanApiRequest.findABI(address);
 				if (abi) {
 					// cache
-					await redis.hmset("abi:external", address, JSON.stringify(abi));
+					await redis.hmset("abi:external", address.value, JSON.stringify(abi));
 					await redis.quit();
 					return { abi: abi, cache: false };
 				}
@@ -87,7 +90,7 @@ export class ABIServices {
 			for(let i = 0; i < fromAddresses.length; i++) {
 				let abiRes: ABIResponse | null;
 				try {
-					abiRes = await this.findABI(fromAddresses[i].value);
+					abiRes = await this.findABI(fromAddresses[i]);
 				} catch {
 					abiRes = null;
 				}

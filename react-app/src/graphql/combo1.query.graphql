@@ -6,6 +6,7 @@ query combo1 {
   contracts{
     address
     balance
+    name
   }
   transactions {
     hash

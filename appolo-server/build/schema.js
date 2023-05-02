@@ -5,21 +5,27 @@ const graphql_tag_1 = require("graphql-tag");
 exports.typeDefs = (0, graphql_tag_1.gql) `
   type Query {
     accounts: [Account!]!
-    account(address: ID!): Account!
+    account(address: ID!): Account
 
     contracts: [Account!]!
-    contact(address: ID!): Account!
+    contract(address: ID!): Account
 
     transactions: [Transaction]!
-    transaction(hash: ID!): Transaction!
+    transaction(hash: ID!): Transaction
 
     blocks: [Block]!
-    block(number: ID!): Block!
+    block(number: ID!): Block
 
-    transactionReceipts: [TransactionReceipt]!
-    transactionReceipt(hash: ID!): TransactionReceipt!
-
+    abi(address: String!, cache: Boolean!): String
   }
+
+  type Mutation {
+    importABIs(addresses: [String]!, names: [String]!, abis: [String]!): RestResponse!
+  }
+
+  type RestResponse {
+    status: String!
+  } 
 
   type Account {
   	address: ID!
@@ -32,21 +38,21 @@ exports.typeDefs = (0, graphql_tag_1.gql) `
   	hash: ID!
   	block: Block!
   	from: String!
-  	blockNumber: String!
+  	blockNumber: Int!
   	transactionReceipt: TransactionReceipt!
-  	chainId: String!
+  	chainId: Int!
   	data: String!
   	gasLimit: String!
   	gasPrice: String!
   	maxFeePerGas: String!
   	maxPriorityFeePerGas: String!
-  	nonce: String!
+  	nonce: Int!
   	to: String
-  	type: String!
+  	type: Int!
   	value: String!
   	r: String!
   	s: String!
-  	v: String!
+  	v: Int!
   }
 
   type Block {
@@ -59,16 +65,16 @@ exports.typeDefs = (0, graphql_tag_1.gql) `
   	gasUsed: String!
   	hash: String!
   	miner: String!
-  	nonce: String!
+  	nonce: Int!
   	parentHash: String!
-  	timestamp: String!
+  	timestamp: Int!
   }
 
   type TransactionReceipt {
   	hash: ID!
   	logs: [Log]!
-	blockHash: String!
-    blockNumber: String!
+	  blockHash: String!
+    blockNumber: Int!
     contractAddress: String
     cumulativeGasUsed: String!
     from: String
@@ -83,11 +89,12 @@ exports.typeDefs = (0, graphql_tag_1.gql) `
   type Log {
   	transactionHash: String!
   	transactionIndex: String!
-  	index: String!
+  	index: Int!
   	blockHash: String
-  	blockNumber: String!
+  	blockNumber: Int!
   	address: String
   	data: String
   	topics: [String]!
+    decodedLog: String
   }
 `;

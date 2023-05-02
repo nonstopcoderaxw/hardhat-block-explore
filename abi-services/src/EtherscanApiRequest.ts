@@ -1,4 +1,6 @@
 import axios from "axios";
+import { Address } from "./Address";
+
 
 export class EtherscanApiRequest {
 	private readonly ENDPOINT = "https://api.etherscan.io/api";
@@ -8,8 +10,8 @@ export class EtherscanApiRequest {
 		this.apiKey = apiKey;
 	}
 
-	async findABI(address: string): Promise<Object> {
-		const url: string = `${this.ENDPOINT}?module=contract&action=getabi&address=${address}&apikey=${this.apiKey}`;
+	async findABI(address: Address): Promise<Object> {
+		const url: string = `${this.ENDPOINT}?module=contract&action=getabi&address=${address.value}&apikey=${this.apiKey}`;
 		try {
 			const result: any = await axios.get(url);
 

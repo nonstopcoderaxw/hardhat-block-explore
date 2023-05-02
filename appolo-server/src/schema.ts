@@ -30,6 +30,8 @@ export const typeDefs = gql`
   	address: ID!
   	balance: String!
   	isContract: Boolean!
+    abi: String
+    name: String
   	transactions: [Transaction]!
   }
 
@@ -94,6 +96,6 @@ export const typeDefs = gql`
   	address: String
   	data: String
   	topics: [String]!
-    decodedLogs: String
+    decodedLog: String
   }
 `;

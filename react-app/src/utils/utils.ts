@@ -11,9 +11,9 @@ export function classNames(...classes): string {
 
 export function getURLParam(hashURL: string): URLParam {
   hashURL = hashURL.replaceAll("#", "");
-  var params: string[] = []
-  
-  if(hashURL.length > 0) params = hashURL.split("/");
+  var params: (string | undefined)[] = hashURL.split("/");
+
+  if (params[3] === "null") params[3] = undefined;
 
   let urlParam: URLParam = {
     nab: params[0] === undefined ? "0" : params[0],

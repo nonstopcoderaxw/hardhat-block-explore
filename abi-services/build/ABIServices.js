@@ -24,12 +24,13 @@ class ABIServices {
             // find from cache
             if (options.cache) {
                 // find from internal
-                abi = JSON.parse((await redis.hget("abi:internal:abis", address)));
+                abi = JSON.parse((await redis.hget("abi:internal:abis", address.value)));
+                const name = (await redis.hget("abi:internal:name", address.value));
                 if (abi) {
                     await redis.quit();
-                    return { abi: abi, cache: true };
+                    return { name: name, abi: abi, cache: true };
                 }
-                abi = JSON.parse((await redis.hget("abi:external", address)));
+                abi = JSON.parse((await redis.hget("abi:external", address.value)));
                 if (abi) {
                     await redis.quit();
                     return { abi: abi, cache: true };
@@ -40,7 +41,7 @@ class ABIServices {
                 abi = await this.etherscanApiRequest.findABI(address);
                 if (abi) {
                     // cache
-                    await redis.hmset("abi:external", address, JSON.stringify(abi));
+                    await redis.hmset("abi:external", address.value, JSON.stringify(abi));
                     await redis.quit();
                     return { abi: abi, cache: false };
                 }
@@ -59,7 +60,7 @@ class ABIServices {
             for (let i = 0; i < fromAddresses.length; i++) {
                 let abiRes;
                 try {
-                    abiRes = await this.findABI(fromAddresses[i].value);
+                    abiRes = await this.findABI(fromAddresses[i]);
                 }
                 catch {
                     abiRes = null;

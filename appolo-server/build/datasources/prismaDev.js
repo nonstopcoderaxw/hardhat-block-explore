@@ -30,7 +30,7 @@ dotenv.config();
 exports.prisma = new client_1.PrismaClient({
     datasources: {
         db: {
-            url: process.env.DATABASE_URL_PROD
+            url: process.env.DATABASE_URL_DEV
         },
     },
 });

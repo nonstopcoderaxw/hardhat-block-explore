@@ -7,7 +7,7 @@ import Account from "../../components/Account"
 import Contract from "../../components/Contract"
 import Transaction from "../../components/Transaction"
 import Tabs from "../../components/tailwindui/Tabs"
-import { useAppSelector } from '../../appContext/hooks';
+import { useAppSelector } from '../../appContext/hooks'
 import { selectAppState } from "../../appContext/appContextSlice"
 import { Account as Account_, Transaction as Transaction_, Block as Block_ } from "../../graphql/generated";
 import { getURLParam, URLParam } from "../../utils/utils";
@@ -43,6 +43,7 @@ export default function Overview() {
             <div className="sticky top-0 z-50 px-4 sm:px-6 lg:pl-8 xl:flex-1 xl:pl-6">
               <Tabs tabs={tab.tabs} currentTabIndex={tab.currentTabIndex} />
             </div>
+
             <div className="px-4 py-6 sm:px-6 lg:pl-8 xl:flex-1 xl:pl-6" data-index="0">
               {tab.currentTabIndex === "0" ?
                 <Accounts data={accounts} /> : <></>
@@ -64,7 +65,7 @@ export default function Overview() {
                 <Block blockNumber={urlParam.oId}/> : <></>
               }
               {urlParam.oType === "Account" ? 
-                <Account address={urlParam.oId}/> : <></>
+                <Account address={urlParam.oId == null ? _appState.selectedAccount : urlParam.oId} /> : <></>
               }
               {urlParam.oType === "Contract" ? 
                 <Contract address={urlParam.oId}/> : <></>

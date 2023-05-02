@@ -28,10 +28,13 @@ export const appContextSlice = createSlice({
         state.contracts = action.payload.contracts;
         state.blocks = action.payload.blocks;
         state.transactions = action.payload.transactions;
+      },
+      updateSelectedAccount: (state, action) => {
+        state.selectedAccount = action.payload.selectedAccount;
       }
     }
 })
 
-export const { initAppState } = appContextSlice.actions;
+export const { initAppState, updateSelectedAccount } = appContextSlice.actions;
 
 export const selectAppState = (state) => state.appState;

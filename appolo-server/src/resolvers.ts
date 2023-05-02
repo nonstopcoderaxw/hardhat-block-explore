@@ -1,3 +1,5 @@
+import { Log } from "./datasources/ABIServices";
+
 export const resolvers = {
   Query: {
 
@@ -38,9 +40,6 @@ export const resolvers = {
             ]
           }
       });
-
-      if (contracts.length == 0) throw(new Error("CONTRACT_NOT_FOUND"))
-
       return contracts[0];
     },
 
@@ -167,7 +166,25 @@ export const resolvers = {
           }
         },
       })
-    }
+    },
+    abi: async ({ address }: any, __: any, { dataSources }: any) => {
+      try {
+        const res = await dataSources.abiServices.findABI(address, "true");
+        return JSON.stringify(res.abi);
+      } catch {
+        return undefined;
+      }
+      const res = await dataSources.abiServices.findABI(address, "true");
+      return JSON.stringify(res.abi);
+    },
+    name: async ({ address }: any, __: any, { dataSources }: any) => {
+      try {
+        const res = await dataSources.abiServices.findABI(address, "true");
+        return res.name;
+      } catch {
+        return undefined;
+      }
+    },
   },
 
   Transaction: {
@@ -203,6 +220,27 @@ export const resolvers = {
     },
     index: ({ index }: any, __: any, { dataSources }: any) => {
       return Number(index.toString())
+    },
+    decodedLog: async ({ address, data, topics }: any, __: any, { dataSources }: any) => {
+      const log: Log = {
+        address: address,
+        data: data,
+        topics: topics
+      }
+
+      try {
+          const decodedLog = await dataSources.abiServices.decodeLogs(
+            [ address ],
+            [ log ]
+          );
+
+          if (decodedLog && decodedLog.length == 1) return JSON.stringify(decodedLog[0]);
+
+          throw (new Error("DECODED_LOGS_FAILED"));
+      } catch (e: any) {
+          throw (e);
+      }
+      
     },
   },
 

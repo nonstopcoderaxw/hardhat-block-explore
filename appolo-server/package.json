@@ -36,7 +36,7 @@
     "server:start:dev": "PROD=false ts-node src/index.ts",
     "ts:rebuild": "rimraf ./build && tsc --project tsconfig.build.json", 
     "ts:build": "tsc -w --project tsconfig.build.json", 
-    "graphql:test": "jest",
+    "graphql:test": "tsc && jest",
     "prisma:generate": "npx prisma generate",
     "nodemon:start:dev": "npx nodemon"
   }

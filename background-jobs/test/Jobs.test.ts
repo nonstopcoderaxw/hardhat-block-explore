@@ -84,26 +84,6 @@ describe("Jobs.test.ts", () => {
 
 	})
 
-	test("decodeLogs", async () => {
-		const mockDecodeLogs = `{"name":"ContractCreated","events":[{"name":"_address","type":"address","value":"0x73511669fd4de447fed18bb79bafeac93ab7f31f"}],"address":"0x73511669fd4dE447feD18BB79bAFeAC93aB7F31f"}`;
-		axios.post.mockResolvedValue({
-			status: "200",
-			data: mockDecodeLogs
-		});
-
-		await importJob.importJobExec(0);
-		const bn = 35;
-		await expect(importJob.decodeLogs(bn)).resolves.not.toThrow();
-
-		const r = await importJob.prismaClientServices.prisma.log.findMany({
-			where: {
-				blockNumber: bn
-			}
-		})
-
-		expect(r[0].decodedLogs).toEqual(mockDecodeLogs);
-	})
-
 	afterAll(async () => {
 		// clear test records
 	    await testData.cleardb(false);

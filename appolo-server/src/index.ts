@@ -7,8 +7,12 @@ import { prisma as prismaDev } from "./datasources/prismaDev"
 import { ABIServices } from "./datasources/ABIServices";
 
 
+const localPlugin = {
+  
+};
+
 async function startApolloServer() {
-  const server = new ApolloServer({ typeDefs, resolvers });
+  const server = new ApolloServer({ typeDefs, resolvers, plugins: [ localPlugin ] });
   const { url } = await startStandaloneServer(server, {
     context: async () => {
       return {

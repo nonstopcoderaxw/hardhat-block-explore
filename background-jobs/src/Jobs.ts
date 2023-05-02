@@ -183,68 +183,70 @@ export class ImportJob {
 	async transformJobExec(bn: bigint): Promise<void> {
 		try { 
 			await this.createContracts(bn) 
-			await this.decodeLogs(bn)
 		} catch (e: any) {
 			throw (e);
 		}
 	}
 
-	async decodeLogs(bn: bigint): Promise<void> {
-		// find out all the addresses in logs list
-		// call out
-		// update logs
-		try {
-			const logs: Log[] = await this.prismaClientServices.prisma.log.findMany({
-				where: {
-					blockNumber: bn
-				}
-			})
+	// async decodeLogs(bn: bigint): Promise<void> {
+	// 	// find out all the addresses in logs list
+	// 	// call out
+	// 	// update logs
+	// 	try {
+	// 		const logs: Log[] = await this.prismaClientServices.prisma.log.findMany({
+	// 			where: {
+	// 				blockNumber: bn
+	// 			}
+	// 		})
 
-			const fromListPayload: string[] = [];
-			const logsPayload: object[] = [];
-			logs.map((item: Log) => {
-				fromListPayload.push(item.address);
-				logsPayload.push({
-					address: item.address,
-					data: item.data,
-					topics: item.topics
-				});
-			})
+	// 		const fromListPayload: string[] = [];
+	// 		const logsPayload: object[] = [];
+	// 		logs.map((item: Log) => {
+	// 			fromListPayload.push(item.address);
+	// 			logsPayload.push({
+	// 				address: item.address,
+	// 				data: item.data,
+	// 				topics: item.topics
+	// 			});
+	// 		})
 
-			const res: any = await axios.post(`${process.env.ABI_SERVICES_ENDPOINT}/decodeLogs`, {
-				fromList: fromListPayload, 
-				logs: logsPayload
-			}, {
-    			headers: { 'Content-Type': 'application/json' }
-    		})
+	// 		const res: any = await axios.post(`${process.env.ABI_SERVICES_ENDPOINT}/decodeLogs`, {
+	// 			fromList: fromListPayload, 
+	// 			logs: logsPayload
+	// 		}, {
+    // 			headers: { 'Content-Type': 'application/json' }
+    // 		})
 
-			if(res.status != "200") throw (new Error("DECODED_LOGS_REQUEST_FAILED"));
+	// 		if(res.status != "200") throw (new Error("DECODED_LOGS_REQUEST_FAILED"));
 
-			if(res.data) {
-				const prismaTxOps: Prisma.PrismaPromise<any>[] = [];
-				logs.map((item: Log) => {
-					prismaTxOps.push(
-						this.prismaClientServices.prisma.log.update({
-							where: {
-								transactionHash_index: {
-									transactionHash: item.transactionHash,
-									index: item.index
-								}
-							}, 
-							data: {
-								decodedLogs: res.data
-							}
-						})
-					)
-				})
+	// 		if(res.data) {
+	// 			const prismaTxOps: Prisma.PrismaPromise<any>[] = [];
+	// 			for(let i = 0; i < logs.length; i++) {
+	// 				const item = logs[i];
+	// 				if(!res.data[i]) continue;
+					
+	// 				prismaTxOps.push(
+	// 					this.prismaClientServices.prisma.log.update({
+	// 						where: {
+	// 							transactionHash_index: {
+	// 								transactionHash: item.transactionHash,
+	// 								index: item.index
+	// 							}
+	// 						}, 
+	// 						data: {
+	// 							decodedLog: res.data[i]
+	// 						}
+	// 					})
+	// 				)
+	// 			}
 
-				await this.prismaClientServices.prisma.$transaction(prismaTxOps);
-			}
+	// 			await this.prismaClientServices.prisma.$transaction(prismaTxOps);
+	// 		}
 
-		} catch (e: any) {
-			throw (e);
-		}
-	}
+	// 	} catch (e: any) {
+	// 		throw (e);
+	// 	}
+	// }
 
 	async createContracts(bn: bigint): Promise<void> {
 		try {
@@ -268,6 +270,7 @@ export class ImportJob {
 				 addresses.push(new Address(item.contractAddress as string));
 			})
 
+			// save contracts
 			await this.upsertAccounts(
 				addresses,
 				await this.hardhatNodeServices.getBalances(addresses),

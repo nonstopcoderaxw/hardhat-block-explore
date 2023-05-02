@@ -4,14 +4,14 @@ exports.resolvers = void 0;
 exports.resolvers = {
     Query: {
         accounts: async (_, __, { dataSources }) => {
-            return dataSources.primsa.account.findMany({
+            return dataSources.prisma.account.findMany({
                 where: {
                     isContract: false
                 }
             });
         },
         account: async (_, { address }, { dataSources }) => {
-            const accounts = await dataSources.primsa.account.findMany({
+            const accounts = await dataSources.prisma.account.findMany({
                 where: {
                     AND: [
                         { address: address },
@@ -22,7 +22,14 @@ exports.resolvers = {
             return accounts[0];
         },
         contracts: async (_, { address }, { dataSources }) => {
-            const contracts = await dataSources.primsa.account.findMany({
+            return dataSources.prisma.account.findMany({
+                where: {
+                    isContract: true
+                }
+            });
+        },
+        contract: async (_, { address }, { dataSources }) => {
+            const contracts = await dataSources.prisma.account.findMany({
                 where: {
                     AND: [
                         { address: address },
@@ -33,53 +40,167 @@ exports.resolvers = {
             return contracts[0];
         },
         transactions: (_, __, { dataSources }) => {
-            return dataSources.primsa.transaction.findMany({});
+            return dataSources.prisma.transaction.findMany({
+                include: {
+                    transactionReceipt: {
+                        include: {
+                            logs: true
+                        }
+                    },
+                    block: true
+                },
+                orderBy: [
+                    {
+                        blockNumber: 'desc',
+                    }
+                ],
+            });
         },
         transaction: (_, { hash }, { dataSources }) => {
-            return dataSources.primsa.transaction.findUnique({
+            return dataSources.prisma.transaction.findUnique({
                 where: {
                     hash: hash
+                },
+                include: {
+                    transactionReceipt: {
+                        include: {
+                            logs: true
+                        }
+                    },
+                    block: true
                 }
             });
         },
-        blocks: (_, __, { dataSources }) => {
-            return dataSources.primsa.block.findMany({});
+        blocks: async (_, __, { dataSources }) => {
+            return dataSources.prisma.block.findMany({
+                include: {
+                    transactions: {
+                        include: {
+                            transactionReceipt: {
+                                include: {
+                                    logs: true
+                                }
+                            }
+                        }
+                    }
+                },
+                orderBy: [
+                    {
+                        timestamp: 'desc',
+                    }
+                ],
+            });
         },
         block: (_, { number }, { dataSources }) => {
-            return dataSources.primsa.block.findUnique({
+            return dataSources.prisma.block.findUnique({
                 where: {
-                    number: number
+                    number: BigInt(number)
+                },
+                include: {
+                    transactions: {
+                        include: {
+                            transactionReceipt: {
+                                include: {
+                                    logs: true
+                                }
+                            }
+                        }
+                    }
                 }
             });
         },
+        abi: async (_, { address, cache }, { dataSources }) => {
+            return JSON.stringify(await dataSources.abiServices.findABI(address, cache.toString()));
+        },
     },
-    Block: {},
+    Mutation: {
+        importABIs: async (_, { addresses, names, abis }, { dataSources }) => {
+            await dataSources.abiServices.importABIs(addresses, names, abis);
+            return {
+                status: "200"
+            };
+        },
+    },
+    RestResponse: {},
+    Block: {
+        nonce: ({ nonce }, __, { dataSources }) => {
+            return Number(nonce.toString());
+        },
+        number: ({ number }, __, { dataSources }) => {
+            return Number(number.toString());
+        },
+        timestamp: ({ timestamp }, __, { dataSources }) => {
+            return Number(timestamp.toString());
+        },
+    },
     Account: {
         transactions: ({ address }, __, { dataSources }) => {
-            return dataSources.primsa.transaction.findMany({
+            return dataSources.prisma.transaction.findMany({
                 where: {
                     from: address
-                }
+                },
+                orderBy: [
+                    {
+                        blockNumber: 'desc',
+                    }
+                ],
+                include: {
+                    transactionReceipt: {
+                        include: {
+                            logs: true
+                        }
+                    }
+                },
             });
         }
     },
     Transaction: {
-        transactionReceipt: ({ hash }, __, { dataSources }) => {
-            return dataSources.primsa.transactionReceipt.findUnique({
-                where: {
-                    hash: hash
-                }
-            });
-        }
+        blockNumber: ({ blockNumber }, __, { dataSources }) => {
+            return Number(blockNumber.toString());
+        },
+        chainId: ({ chainId }, __, { dataSources }) => {
+            return Number(chainId.toString());
+        },
+        nonce: ({ nonce }, __, { dataSources }) => {
+            return Number(nonce.toString());
+        },
+        type: ({ type }, __, { dataSources }) => {
+            return Number(type.toString());
+        },
+        v: ({ v }, __, { dataSources }) => {
+            return Number(v.toString());
+        },
     },
     TransactionReceipt: {
-        logs: ({ hash }, __, { dataSources }) => {
-            return dataSources.primsa.log.findMany({
-                where: {
-                    transactionHash: hash
-                }
-            });
-        }
+        blockNumber: ({ blockNumber }, __, { dataSources }) => {
+            return Number(blockNumber.toString());
+        },
+        index: ({ index }, __, { dataSources }) => {
+            return Number(index.toString());
+        },
     },
-    Log: {}
+    Log: {
+        blockNumber: ({ blockNumber }, __, { dataSources }) => {
+            return Number(blockNumber.toString());
+        },
+        index: ({ index }, __, { dataSources }) => {
+            return Number(index.toString());
+        },
+        decodedLog: async ({ address, data, topics }, __, { dataSources }) => {
+            const log = {
+                address: address,
+                data: data,
+                topics: topics
+            };
+            try {
+                const decodedLog = await dataSources.abiServices.decodeLogs([address], [log]);
+                if (decodedLog && decodedLog.length == 1)
+                    return decodedLog;
+                throw (new Error("DECODED_LOGS_FAILED"));
+            }
+            catch (e) {
+                throw (e);
+            }
+        },
+    },
 };

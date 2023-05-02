@@ -16,7 +16,6 @@ export default function Contract({address}) {
 
     if (error) throw(error)
 
-
     const contract: Account_ = data!.contract as Account_
     const transactions: Transaction_[] = contract.transactions as Transaction_[]
 
@@ -26,7 +25,6 @@ export default function Contract({address}) {
       window.location.hash = `#${urlParam.nab}/${urlParam.oTab}/Transaction/${hash}`
     }
 
-
     return (
       <div>
         <div className="px-4 sm:px-0">
@@ -35,7 +33,11 @@ export default function Contract({address}) {
         </div>
         <div className="mt-6">
           <dl className="grid grid-cols-1 sm:grid-cols-2">
-            <div className="border-t border-gray-100 px-4 py-6 sm:col-span-2 sm:px-0">
+            <div className="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
+              <dt className="text-sm font-medium leading-6 text-gray-900">name</dt>
+              <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">{contract.name}</dd>
+            </div>
+            <div className="border-t border-gray-100 px-4 py-6 sm:col-span-1 sm:px-0">
               <dt className="text-sm font-medium leading-6 text-gray-900">Balance</dt>
               <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">{contract.balance}</dd>
             </div>
@@ -66,6 +68,11 @@ export default function Contract({address}) {
             </div>
           ))}
           </dl>
+        </div>
+
+        <div className="border-t border-gray-100 px-4 py-6 sm:col-span-2 sm:px-0">
+            <dt className="text-sm font-medium leading-6 text-gray-900">ABI</dt>
+            <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">{contract.abi}</dd>
         </div>
 
       </div>

@@ -11,7 +11,7 @@ class EtherscanApiRequest {
         this.apiKey = apiKey;
     }
     async findABI(address) {
-        const url = `${this.ENDPOINT}?module=contract&action=getabi&address=${address}&apikey=${this.apiKey}`;
+        const url = `${this.ENDPOINT}?module=contract&action=getabi&address=${address.value}&apikey=${this.apiKey}`;
         try {
             const result = await axios_1.default.get(url);
             if (result.data.status == "0")

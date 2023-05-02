@@ -1,4 +1,4 @@
-query transaction($hash: ID! = "0x349a325f9efc7a21fd2b9f0efe79a24e516811e6a5a96dabf79e71c466f644cc") {
+query transaction($hash: ID!) {
   transaction(hash: $hash){
     blockNumber
       chainId
@@ -32,6 +32,7 @@ query transaction($hash: ID! = "0x349a325f9efc7a21fd2b9f0efe79a24e516811e6a5a96d
           topics
           transactionHash
           transactionIndex
+          decodedLog
         }
         logsBloom
         status

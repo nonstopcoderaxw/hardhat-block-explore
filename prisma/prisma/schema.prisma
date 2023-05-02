@@ -68,8 +68,6 @@ model Log {
   data String
   topics String[]
 
-  decodedLogs Json?
-
   @@id([transactionHash, index])
 }
 

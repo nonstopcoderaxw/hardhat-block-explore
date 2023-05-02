@@ -2,6 +2,8 @@ query contract($address: ID!) {
   contract(address: $address) {
     address
     balance
+    name
+    abi
     transactions {
       hash
       nonce

@@ -6,7 +6,7 @@ import { useQuery } from "@apollo/client"
 import { Account as Account_, Block as Block_, Transaction as Transaction_ } from "./graphql/generated";
 import { Combo1_Query } from "./graphql/queries"
 import { useAppDispatch } from './appContext/hooks';
-import { initAppState, AppState } from "./appContext/appContextSlice"
+import { initAppState, updateSelectedAccount, AppState } from "./appContext/appContextSlice"
 
 
 export default function App() {
@@ -21,8 +21,8 @@ export default function App() {
   if (error) throw(error)
 
   const accounts: Account_[] = data!.accounts as Account_[];
-
-  const comboboxes = <Comboboxes accounts={accounts} />;
+  
+  const comboboxes = <Comboboxes accounts={accounts} onChange={(selected)=>{dispatch(updateSelectedAccount({selectedAccount: selected.address}))}} />;
   const logoImg = <a href="/"><img className="h-8 w-auto" src="./assets/logo.png" alt="Log" /></a>;
   const nav = {
       RightItem: (() => comboboxes),

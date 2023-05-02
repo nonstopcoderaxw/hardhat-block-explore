@@ -23,14 +23,34 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.prisma = void 0;
-const client_1 = require("@prisma/client");
+exports.ABIServices = void 0;
+const datasource_rest_1 = require("@apollo/datasource-rest");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-exports.prisma = new client_1.PrismaClient({
-    datasources: {
-        db: {
-            url: process.env.DATABASE_URL_PROD
-        },
-    },
-});
+class ABIServices extends datasource_rest_1.RESTDataSource {
+    constructor() {
+        super();
+        this.baseURL = `${process.env.ABI_SERVICE_ENDPOINT}`;
+    }
+    findABI(address, cache) {
+        return this.get(`findABI/${address}/${cache}`);
+    }
+    importABIs(addresses, names, abis) {
+        return this.post(`importABIs`, {
+            body: {
+                addresses: addresses,
+                names: names,
+                abis: abis
+            }
+        });
+    }
+    decodeLogs(fromList, logs) {
+        return this.post(`decodeLogs`, {
+            body: {
+                fromList: fromList,
+                logs: logs
+            }
+        });
+    }
+}
+exports.ABIServices = ABIServices;

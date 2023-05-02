@@ -28,7 +28,7 @@ app.get('/findABI/:address/:cache', async (_req, _res) => {
 
         const abiServices = new ABIServices(new EtherscanApiRequest(process.env.ETHERSCAN_API_KEY as string));
         const result: ABIResponse | null = await abiServices.findABI(
-            address as string, 
+            new Address(address), 
             { cache: cache == "true" ? true : false }
         );
 
@@ -91,7 +91,6 @@ app.post("/importABIs", async (_req, _res) => {
         });
         const names: string[] = _req.body.names;
         const abis: string[] = _req.body.abis;
-
         await ABIServices.importABIs(addresses, names, abis);
         log.info(() => JSON.stringify(({ endpoint: "/importABIs", params: _req.body } as LogMessage)));
 

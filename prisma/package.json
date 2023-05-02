@@ -16,7 +16,7 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-typescript": "^7.21.0",
     "@jest/globals": "^29.5.0",
-    "@types/jest": "^29.5.0"  
+    "@types/jest": "^29.5.0"
   },
   "scripts": {
     "save:db:prod": "npx ts-node ./src/db/save-db-prod.ts",

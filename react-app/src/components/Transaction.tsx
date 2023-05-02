@@ -13,30 +13,14 @@ export default function Transaction({hash}) {
 
   if (error) throw(error)
 
-
   const transaction: Transaction_ = data!.transaction as Transaction_
   const transactionReceipt: TransactionReceipt_ = transaction.transactionReceipt as TransactionReceipt_
   const logs: Log_[] = transactionReceipt.logs as Log_[]
-
-  ///******
-  const decodedLogs = 
-  [
-    {
-     "name": "NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)",
-     "data": {
-        "name": "axw",
-        "cost": "433378766144034655",
-        "expires": "1685624387"
-      },
-    }, {
-     "name": "NameRenewed (string name, index_topic_1 bytes32 label, uint256 cost, uint256 expires)",
-     "data": {
-        "name": "axw",
-        "cost": "433378766144034655",
-        "expires": "1685624387"
-      }
-    }
-  ]  
+  
+  const decodedLogs = logs.map((item: Log_) => {
+    if(item.decodedLog) return JSON.parse(item.decodedLog)
+    return null;
+  })
 
   return (
     <div>
@@ -144,20 +128,38 @@ export default function Transaction({hash}) {
               <div className="flex-shrink-0 text-xl"> 
                 {i}
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-gray-900">
-                    {item.address}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {decodedLogs[i].name}
-                </p>
-                <hr className="border-gray-200" />
-                <p className="text-sm text-gray-500">
-                  {Object.keys(decodedLogs[i].data).map((item2, i2) => (
-                      <span key={i2}>{item2}: {decodedLogs[i].data[item2]}<br/></span>
-                  ))}
-                </p>
-              </div>
+              {decodedLogs[i] != null ? 
+                (
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-gray-900">
+                        {decodedLogs[i].address}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {decodedLogs[i].name} 
+                    </p>
+                    <hr className="border-gray-200" />
+                    <p className="text-sm text-gray-500">
+                      {decodedLogs[i].events.map((event, eindex) => (
+                          <span key={eindex}>{event.name}({event.type}): {event.value}<br/></span>
+                      ))}
+                    </p>
+                  </div>
+                )
+                : (
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-gray-900">
+                          from: {item.address}
+                      </p>
+                      <p className="text-sm font-semibold text-gray-900">
+                          data: {item.data}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                          topics: {item.topics}
+                      </p>
+                      <hr className="border-gray-200" />
+                    </div>
+                  )
+              }
             </div>
           </div>
         ))}

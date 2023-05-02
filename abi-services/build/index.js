@@ -43,7 +43,7 @@ app.get('/findABI/:address/:cache', async (_req, _res) => {
         const address = _req.params.address;
         const cache = _req.params.cache;
         const abiServices = new ABIServices_1.ABIServices(new EtherscanApiRequest_1.EtherscanApiRequest(process.env.ETHERSCAN_API_KEY));
-        const result = await abiServices.findABI(address, { cache: cache == "true" ? true : false });
+        const result = await abiServices.findABI(new Address_1.Address(address), { cache: cache == "true" ? true : false });
         if (!result) {
             // logging:error
             log_config_1.backgroundJobLog.error(() => JSON.stringify({ endpoint: "/findABI", params: _req.params, errors: "ABI_Not_Found" }));
