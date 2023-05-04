@@ -2,17 +2,12 @@ import { useState } from 'react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { Combobox } from '@headlessui/react'
 import { classNames } from "../../utils/utils"
-import { useAppSelector } from '../../appContext/hooks'
-import { selectAppState } from "../../appContext/appContextSlice"
 
-type Account = {
-  address: string
-}
 
-export default function Comboboxes({accounts, onChange}) {
+export default function Comboboxes({items, defaultItem, onChange}) {
 
   const [query, setQuery] = useState('')
-  const [selected, setSelected] = useState(accounts.length > 0 ? accounts[0] : null)
+  const [selected, setSelected] = useState(defaultItem)
 
   const onChangeHandlder = (item) => {
     onChange(item);
@@ -21,18 +16,19 @@ export default function Comboboxes({accounts, onChange}) {
 
   const filtered =
     query === ''
-      ? accounts
-      : accounts.filter((item) => {
-          return item.address.includes(query)
+      ? items
+      : items.filter((item) => {
+          return item.includes(query)
         })
 
   return (
     <Combobox as="div" value={selected} onChange={onChangeHandlder}>
-      <div className="relative mt-2 override-combobox-width">
+      <div className="relative mt-2">
         <Combobox.Input
           className="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          onChange={(event) => setQuery(event.target.value)}
-          displayValue={(account: Account) => account?.address}
+          onChange={(event) => { setQuery(event.target.value)} } 
+          displayValue={selected}
+          onBlur={(event)=>{setSelected(event.target.value)}}
         />
         <Combobox.Button onClick={(event) => setQuery("")} className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
           <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -53,7 +49,7 @@ export default function Comboboxes({accounts, onChange}) {
               >
                 {({ active, selected }) => (
                   <>
-                    <span className={classNames('block truncate', selected && 'font-semibold')}>{item.address}</span>
+                    <span className={classNames('block truncate', selected && 'font-semibold')}>{item}</span>
 
                     {selected && (
                       <span

@@ -25,7 +25,9 @@ export default function Nav({navs, RightItem, LogoImg}) {
               </div>
             </div>
             <div className="flex items-center gap-x-8">
-              <RightItem />
+              <dl className="override-combobox-width">
+                  <RightItem />
+              </dl>
             </div>
           </div>
       </header>

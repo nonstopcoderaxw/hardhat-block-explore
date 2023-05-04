@@ -30,7 +30,9 @@
     "@graphql-codegen/cli": "^3.2.2",
     "@graphql-codegen/typed-document-node": "^3.0.2",
     "@graphql-codegen/typescript": "^3.0.2",
-    "@graphql-codegen/typescript-operations": "^3.0.2"
+    "@graphql-codegen/typescript-operations": "^3.0.2",
+    "ethers": "^5.1.0",
+    "@typechain/ethers-v5":"^10.1.0"
   },
   "scripts": {
     "start": "GENERATE_SOURCEMAP=false react-scripts start",

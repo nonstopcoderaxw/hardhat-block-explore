@@ -21,8 +21,13 @@ export default function App() {
   if (error) throw(error)
 
   const accounts: Account_[] = data!.accounts as Account_[];
-  
-  const comboboxes = <Comboboxes accounts={accounts} onChange={(selected)=>{dispatch(updateSelectedAccount({selectedAccount: selected.address}))}} />;
+
+  const itemsComboboxes: string[] = [];
+  for (let i  = 0; i < accounts.length; i++) {
+      itemsComboboxes.push(accounts[i].address);
+  }
+
+  const comboboxes = <Comboboxes items={itemsComboboxes} defaultItem={itemsComboboxes.length > 0 ? itemsComboboxes[0] : ""} onChange={(selected)=>{dispatch(updateSelectedAccount({selectedAccount: selected}))}} />;
   const logoImg = <a href="/"><img className="h-8 w-auto" src="./assets/logo.png" alt="Log" /></a>;
   const nav = {
       RightItem: (() => comboboxes),

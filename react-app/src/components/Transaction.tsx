@@ -26,7 +26,7 @@ export default function Transaction({hash}) {
     <div>
       <div className="px-4 sm:px-0">
         <h3 className="text-base font-semibold leading-7 text-gray-900">Transaction Details</h3>
-        <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-500">0x8c66c3a1b634f4d54449ba3f9c49d613be63b2293016f3c5882b90eb8aaa082d</p>
+        <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-500">{transaction.hash}</p>
       </div>
       <div className="mt-6">
         <dl className="grid grid-cols-1 sm:grid-cols-2">

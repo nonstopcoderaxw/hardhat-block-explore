@@ -13,15 +13,17 @@ import { Account as Account_, Transaction as Transaction_, Block as Block_ } fro
 import { getURLParam, URLParam } from "../../utils/utils";
 import { useLocation } from 'react-router-dom';
 
+
 export default function Overview() {
   const urlParam: URLParam = getURLParam(useLocation().hash);
+
 
   let _appState = useAppSelector(selectAppState);
   if (!_appState) throw (new Error("NULL_APP_STATE"));
   const accounts: Account_ = _appState.accounts as Account_;
-  const contracts: Account_ = _appState.contracts as Account_;
-  const transactions: Transaction_  = _appState.transactions as Transaction_;
-  const blocks: Block_ = _appState.blocks as Block_;
+  const contracts: Account_[] = _appState.contracts as Account_[];
+  const transactions: Transaction_[]  = _appState.transactions as Transaction_[];
+  const blocks: Block_[] = _appState.blocks as Block_[];
 
   const tabs = [
     { name: 'EOAs' },
@@ -29,7 +31,7 @@ export default function Overview() {
     { name: 'Transactions' },
     { name: 'Blocks' },
   ]
-  
+
   const tab = {
     tabs: tabs,
     currentTabIndex: urlParam.oTab,
