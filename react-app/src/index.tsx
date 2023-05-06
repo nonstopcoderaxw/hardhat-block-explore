@@ -5,6 +5,8 @@ import { store } from "./appContext/store"
 import './index.css';
 import App from './App';
 import { ApolloProvider, ApolloClient, InMemoryCache } from '@apollo/client';
+import { BrowserRouter } from 'react-router-dom';
+
 
 const { REACT_APP_GRAGHQL } = process.env;
 
@@ -21,7 +23,9 @@ root.render(
   <Provider store={store}>
     <ApolloProvider client={client}>
       <React.StrictMode>
-        <App />
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
       </React.StrictMode>
     </ApolloProvider>
   </Provider>

@@ -1,17 +1,31 @@
 import { classNames, getURLParam, URLParam } from "../utils/utils";
 import { useLocation } from 'react-router-dom';
+import { useAppSelector } from '../appContext/hooks'
+import { selectAppState } from "../appContext/appContextSlice"
 
+type UIContract = {
+  address: string,
+  name: string,
+  balance: string
+}
 
-export default function Contracts({data}) {
-  const urlParam: URLParam = getURLParam(useLocation().hash);
+export type UIContractsInput = {
+  items: UIContract[]
+  onClick: (address) => void
+}
+
+export default function Contracts({items, onClick}: UIContractsInput) {
+  let _appState = useAppSelector(selectAppState);
+  if (!_appState) throw (new Error("NULL_APP_STATE"));
+  const urlParam: URLParam = _appState.urlParam;
 
   const nav = (e) => {
     e.preventDefault();
-    const address = e.currentTarget.getAttribute("data-address")
-    window.location.hash = `#${urlParam.nab}/${urlParam.oTab}/Contract/${address}`
+    const address = e.currentTarget.getAttribute("data-address");
+    onClick(address);
+    const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/contract/${address}`;
+    window.history.pushState({ path: bookmark }, '', bookmark);
   }
-
-  const items = data;
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">

@@ -1,6 +1,12 @@
 import { ExclamationTriangleIcon } from '@heroicons/react/20/solid'
 
-export default function Alert({type, message}) {
+
+export type AlertInput = {
+  type: string | null,
+  message: string | null
+}
+
+export default function Alert({type, message}: AlertInput) {
   return (<>
     {type === "warn" ? (
       <div className="border-l-4 border-yellow-400 bg-yellow-50 p-4">

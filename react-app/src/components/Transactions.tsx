@@ -1,15 +1,29 @@
 import { classNames, getURLParam, URLParam } from "../utils/utils";
 import { useLocation } from 'react-router-dom';
+import { useAppSelector } from '../appContext/hooks'
+import { selectAppState } from "../appContext/appContextSlice"
 
-export default function Transactions({data}) {
-  const urlParam: URLParam = getURLParam(useLocation().hash);
+type UITransaction = {
+  hash: string,
+  timestamp: number
+}
+
+export type UITransactionsInput = {
+  items: UITransaction[],
+  onClick: (hash) => void
+}
+
+export default function Transactions({items, onClick}: UITransactionsInput) {
+  let _appState = useAppSelector(selectAppState);
+  if (!_appState) throw (new Error("NULL_APP_STATE"));
+  const urlParam: URLParam = _appState.urlParam;
+
   const nav = (e) => {
     e.preventDefault();
     const hash = e.currentTarget.getAttribute("data-hash")
-    window.location.hash = `#${urlParam.nab}/${urlParam.oTab}/Transaction/${hash}`
+    const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/transaction/${hash}`;
+    window.history.pushState({ path: bookmark }, '', bookmark);
   }
-
-  const items = data;
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -57,7 +71,7 @@ export default function Transactions({data}) {
                         'whitespace-nowrap hidden px-3 py-4 text-sm text-gray-500 sm:table-cell'
                       )}
                     >
-                      {item.block.timestamp}
+                      {item.timestamp}
                     </td>
                   </tr>
                 ))}

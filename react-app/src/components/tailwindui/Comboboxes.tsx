@@ -4,7 +4,13 @@ import { Combobox } from '@headlessui/react'
 import { classNames } from "../../utils/utils"
 
 
-export default function Comboboxes({items, defaultItem, onChange}) {
+export type UIComboboxesInput = {
+    items: string[],
+    defaultItem: string | null,
+    onChange: (address: string) => void | null
+}
+
+export default function Comboboxes({items, defaultItem, onChange}: UIComboboxesInput) {
 
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(defaultItem)
@@ -20,6 +26,9 @@ export default function Comboboxes({items, defaultItem, onChange}) {
       : items.filter((item) => {
           return item.includes(query)
         })
+  const displayValueHandler = (item) => {
+    return item;
+  }
 
   return (
     <Combobox as="div" value={selected} onChange={onChangeHandlder}>
@@ -27,7 +36,7 @@ export default function Comboboxes({items, defaultItem, onChange}) {
         <Combobox.Input
           className="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
           onChange={(event) => { setQuery(event.target.value)} } 
-          displayValue={selected}
+          displayValue={displayValueHandler}
           onBlur={(event)=>{setSelected(event.target.value)}}
         />
         <Combobox.Button onClick={(event) => setQuery("")} className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">

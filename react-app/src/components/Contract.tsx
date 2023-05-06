@@ -2,38 +2,73 @@ import { ContractDocument, Account as Account_, Transaction as Transaction_ } fr
 import { useQuery } from "@apollo/client";
 import { getURLParam, URLParam } from "../utils/utils";
 import { useLocation } from 'react-router-dom';
-import Comboboxes from "./tailwindui/Comboboxes"
-import Alert from "./tailwindui/alert"
+import Comboboxes, { UIComboboxesInput } from "./tailwindui/Comboboxes"
+import Alert from "./tailwindui/Alert"
 import { useState } from 'react'
 import { useAppSelector } from '../appContext/hooks'
 import { selectAppState } from "../appContext/appContextSlice"
-import { Abi } from "../utils/abi"
+import { Abi, Function} from "../utils/abi"
+import { Address } from "../utils/Address";
 
-export default function Contract({address}) {
+
+export type UIContractInput = {
+  address: string | null,
+  implAddress: string | null,
+  selectedFuncIndex: number | null
+}
+
+type UICallParam = {
+  name: string | undefined ,
+  type: string | undefined
+}
+
+type UIImplContract = {
+  hasABI: boolean
+}
+
+export type UIContractOuput = {
+  Comboboxes: {
+    contract: UIComboboxesInput,
+    implContract: UIComboboxesInput,
+    funcs: UIComboboxesInput
+  },
+  uiimplContract: UIImplContract,
+  selectedFuncIndex: Number | null,
+  inputs: UICallParam[]
+}
+
+export default function Contract({address, implAddress, selectedFuncIndex}: UIContractInput) {
+
+    address = (address && address != null) ? (new Address(address)).value : null;
+    implAddress = (implAddress && implAddress != null) ? (new Address(implAddress)).value : null;
+    if (selectedFuncIndex && (typeof selectedFuncIndex) === "number") throw ("selectedFuncIndex input type error");
 
     let _appState = useAppSelector(selectAppState);
     if (!_appState) throw (new Error("NULL_APP_STATE"));
-    const [ contractAddress, setContractAddress ] = useState(address);
-    const [ implAddress, setImplAddress ] = useState(address);
-    
-    const urlParam: URLParam = getURLParam(useLocation().hash);
+    const urlParam: URLParam = _appState.urlParam;
 
-    var { data, loading, error } = useQuery(ContractDocument, {
-      variables: { address: address }
+    //const [ contractAddress_, setContractAddress ] = useState(address);
+    //const [ implAddress_, setImplAddress ] = useState(implAddress);
+    var contractAddress_ = address;
+    var implAddress_ = implAddress;
+    console.log(contractAddress_);
+    const [ selectedFuncIndex_, setSelectedFuncIndex ] = useState(Number(selectedFuncIndex));
+    
+    const { data: gqlData0, loading: gqlLoading0, error: gqlError0 } = useQuery(ContractDocument, {
+      variables: { address: contractAddress_ as string },
+      skip: !address || address == null 
     }); 
 
-    var { data: data1, loading: loading1, error: error1 } = useQuery(ContractDocument, {
-      variables: { address: implAddress }
+    const { data: gqlData1, loading: gqlLoading1, error: gqlError1 } = useQuery(ContractDocument, {
+      variables: { address: implAddress_ as string },
+      skip: !implAddress_ || implAddress_ == null 
     }); 
 
-    //if (loading || loading1) return null;
+    if (gqlError0) throw(gqlError0)
+    if (gqlError1) throw(gqlError1)
 
-    if (error) throw(error)
-    if (error1) throw(error1)
-    
-    const contract: Account_ = data!.contract as Account_
-    const implContract: Account_ = data1!.contract as Account_
-
+    const contract: Account_ | null = gqlData0 ? gqlData0!.contract as Account_ : null
+    const implContract: Account_ | null = gqlData1 ? gqlData1!.contract as Account_ : null
     const contracts: Account_[] = _appState.contracts as Account_[];
 
     const proxyComboboxesItems: string[] = [];
@@ -45,40 +80,82 @@ export default function Contract({address}) {
 
     const comboboxesOnChangeHandler = {
       proxy: (address) => {
-        setContractAddress(address)
-        window.location.hash = `#${urlParam.nab}/${urlParam.oTab}/Contract/${address}/${urlParam.implId}/${urlParam.fIndex}/${urlParam.frBN}/${urlParam.toBN}`;
+        //setContractAddress(address)
+        contractAddress_ = address;
+        const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/Contract/${address}/${urlParam.implId}/${urlParam.fIndex}/${urlParam.frBN}/${urlParam.toBN}`;
+        window.history.pushState({ path: bookmark }, '', bookmark);
       },
       implementation: (address) => {
-        console.log(address)
-        setImplAddress(address)
-        // var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?myNewUrlQuery=1';
-        // window.history.pushState({path:newurl},'',newurl);
-
-        //window.location.hash = `#${urlParam.nab}/${urlParam.oTab}/Contract/${urlParam.oId}/${address}/`
+        //setImplAddress(address);
+        implAddress_ = address
+        setSelectedFuncIndex(0);
+        const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/Contract/${urlParam.oId}/${address}`;
+        window.history.pushState({ path: bookmark }, '', bookmark);
       },
       function: (item) => {
         const fIndex = funcAbiMinimal.findIndex(element => element === item);
-        inputs = funcAbiJson[fIndex].inputs;
-        window.location.hash = `#${urlParam.nab}/${urlParam.oTab}/Contract/${urlParam.oId}/${urlParam.implId}/${fIndex}`
+        setSelectedFuncIndex(fIndex);
+        const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/Contract/${urlParam.oId}/${urlParam.implId}/${fIndex}`;
+        window.history.pushState({ path: bookmark }, '', bookmark);
       }
     }
 
-    var funcAbis;
-    var funcAbiMinimal;
-    var funcAbiJson;
-    var funcComboboxesDefault;
-    var inputs;
+    const hasABI: boolean = (implContract && implContract.abi) ? true : false
+    var funcAbiMinimal: string[] = [];
+    var funcComboboxesDefault: string | null = null;
+    const uiinputs: UICallParam[] = [];
 
-    if (implContract.abi) {
-      const abi = new Abi(implContract.abi);
-      funcAbis = abi.getFunctions();
-      funcAbiMinimal = funcAbis.minimal;
-      funcAbiJson = funcAbis.json;
+    if (implContract && hasABI) {
+        const abi: Abi = new Abi(implContract.abi as string);
+        const funcAbis: Function = abi.getFunctions();
+        funcAbiMinimal = funcAbis.minimal;
+        const funcAbiJson = funcAbis.json;
 
-      funcComboboxesDefault = [ undefined, null, "null" ].includes(urlParam.fIndex) ? funcAbiMinimal[0] : funcAbiMinimal[Number(urlParam.fIndex)];
-      inputs = !inputs ? funcAbiJson[0].inputs : inputs;
+        funcComboboxesDefault = funcAbiMinimal[selectedFuncIndex_];
+        const inputs = funcAbiJson[selectedFuncIndex_].inputs;
+        if (inputs) {
+          inputs.map((input) => {
+            uiinputs.push({
+              name: input.name,
+              type: input.type
+            })
+          })
+        }
     }
-    
+
+    const uicomboboxesContract: UIComboboxesInput = {
+      items: proxyComboboxesItems,
+      defaultItem: contractAddress_,
+      onChange: comboboxesOnChangeHandler.proxy
+    }
+
+    const uicomboboxesImpl: UIComboboxesInput = {
+      items: implComboboxesItems,
+      defaultItem: implAddress_,
+      onChange: comboboxesOnChangeHandler.implementation
+    }
+
+    const funcs: UIComboboxesInput = {
+      items: funcAbiMinimal,
+      defaultItem: funcComboboxesDefault,
+      onChange: comboboxesOnChangeHandler.function
+    }
+
+    const uiimplContract: UIImplContract = {
+      hasABI: hasABI
+    }
+
+    const uidata: UIContractOuput = {
+      Comboboxes: {
+        contract: uicomboboxesContract,
+        implContract: uicomboboxesImpl,
+        funcs: funcs
+      },
+      uiimplContract: uiimplContract,
+      selectedFuncIndex: selectedFuncIndex_,
+      inputs: uiinputs
+    }
+
 
     return (
       <>
@@ -92,7 +169,7 @@ export default function Contract({address}) {
             <div className="border-t border-gray-100 px-4 py-6 sm:col-span-2 sm:px-0">
               <dt className="text-sm font-medium leading-6 text-gray-900">proxy</dt>
               <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">             
-                <Comboboxes items={proxyComboboxesItems} defaultItem={contract.address} onChange={comboboxesOnChangeHandler.proxy} />
+                <Comboboxes items={uidata.Comboboxes.contract.items} defaultItem={uidata.Comboboxes.contract.defaultItem} onChange={uidata.Comboboxes.contract.onChange} />
               </dd>
             </div>
           </dl>
@@ -100,16 +177,16 @@ export default function Contract({address}) {
             <div className="border-t border-gray-100 px-4 py-6 sm:col-span-2 sm:px-0">
               <dt className="text-sm font-medium leading-6 text-gray-900">implementation</dt>
               <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">             
-                <Comboboxes items={implComboboxesItems} defaultItem={implContract.address} onChange={comboboxesOnChangeHandler.implementation} />
+                <Comboboxes items={uidata.Comboboxes.implContract.items} defaultItem={uidata.Comboboxes.implContract.defaultItem} onChange={uidata.Comboboxes.implContract.onChange} />
               </dd>
             </div>
           </dl>
-          {implContract.abi ? 
+          {uidata.uiimplContract.hasABI ? 
             (<>
               <dl className="grid grid-cols-1 sm:grid-cols-3">
                 <div className="border-t border-gray-100 px-4 py-6 sm:col-span-3 sm:px-0">
                   <dt className="text-sm font-medium leading-6 text-gray-900">function</dt>
-                  <Comboboxes items={funcAbiMinimal} defaultItem={funcComboboxesDefault} onChange={comboboxesOnChangeHandler.function} />
+                  <Comboboxes items={uidata.Comboboxes.funcs.items} defaultItem={uidata.Comboboxes.funcs.defaultItem} onChange={uidata.Comboboxes.funcs.onChange} />
                 </div>
               </dl>
               <dl className="grid grid-cols-1 sm:grid-cols-2">
@@ -133,14 +210,14 @@ export default function Contract({address}) {
                       className="block w-2/5 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     /></dd>
                 </div>
-                {inputs.map((input) => {
+                {uidata.inputs.map((input) => {
                     return (
                       <div key={input.name} className="border-t border-gray-100 px-4 py-6 sm:col-span-2 sm:px-0">
                         <dt className="text-sm font-medium leading-6 text-gray-900">{input.name} ({input.type})</dt>
                         <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">
                         <input
                             placeholder=""
-                            type={input.type.includes("int") ? "number" : "text"}
+                            type={input.type?.includes("int") ? "number" : "text"}
                             name={input.name}
                             className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                           /></dd>

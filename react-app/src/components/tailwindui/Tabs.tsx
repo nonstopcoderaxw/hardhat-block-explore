@@ -1,14 +1,37 @@
 import { useLocation } from 'react-router-dom';
 import { classNames, getURLParam, URLParam } from "../../utils/utils";
+import { useAppSelector } from '../../appContext/hooks'
+import { selectAppState } from "../../appContext/appContextSlice"
+import { useState } from "react";
 
-export default function Tabs({tabs, currentTabIndex}) {
-  const urlParam: URLParam = getURLParam(useLocation().hash);
+export type UITab = {
+  name: string
+  current: boolean
+}
 
+export type UITabsInput = {
+  tabs: UITab[],
+  currentTabIndex: number,
+  onClick: (index: number) => void
+}
+
+export default function Tabs({tabs, currentTabIndex, onClick}: UITabsInput) {
+  let _appState = useAppSelector(selectAppState);
+  if (!_appState) throw (new Error("NULL_APP_STATE"));
+  const urlParam: URLParam = _appState.urlParam;
+
+  tabs.map((item, i) => {
+    if (i !== currentTabIndex) item.current = false;
+  })
   tabs[currentTabIndex].current = true;
+  
   const onClickHandler = (e) => {
     e.preventDefault();
     const tab = e.currentTarget.getAttribute("data-index");
-    window.location.hash = `#${urlParam.nab}/${tab}/${urlParam.oType}/${urlParam.oId}`
+    onClick(Number(tab));
+    const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${tab}/${urlParam.oType}/${urlParam.oId}`;
+    window.history.pushState({ path: bookmark }, '', bookmark);
+    //window.location.hash = `#${urlParam.nab}/${tab}/${urlParam.oType}/${urlParam.oId}`
   }
   
   return (
