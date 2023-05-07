@@ -12,7 +12,7 @@ import { selectAppState } from "../../appContext/appContextSlice"
 import { Account as Account_, Transaction as Transaction_, Block as Block_ } from "../../graphql/generated";
 import { getURLParam, URLParam } from "../../utils/utils";
 import { useLocation } from 'react-router-dom';
-import { useState } from 'react'
+import { useState, useEffect, useLayoutEffect } from 'react'
 import { Address } from "../../utils/Address"
 
 export type UIOverviewInput = {
@@ -75,6 +75,10 @@ export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}:
       setType("contract");
       setContract(id);
       setImplContract(id);
+      console.log(id);
+      setContractAddress(id);
+      setSelected(id);
+      setQuery(id);
     },
     transactions: (id) => {
       setType("transaction");
@@ -167,6 +171,13 @@ export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}:
     uiblock: uiblock
   }
 
+
+
+  const [ contractAddress_, setContractAddress ] = useState(contract_);
+  const [query, setQuery] = useState<string>('')
+  const [selected, setSelected] = useState<string | null>(contract_)
+
+
   return (
      <>
        <div className="position-relative mx-auto w-full grow lg:flex xl:px-2">
@@ -200,7 +211,7 @@ export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}:
                 <Account address={account_} onClick={handlers.account} newAddress={account_} /> : <></>
               }
               {uioverviewoutput.oType === "contract" ? 
-                <Contract address={contract_} implAddress={implContract_} selectedFuncIndex={fIndex_} /> : <></>
+                <Contract address={contract_} implAddress={implContract_} selectedFuncIndex={fIndex_} contractAddress_={contractAddress_} setContractAddress={setContractAddress} query={query} setQuery={setQuery} selected={selected} setSelected={setSelected}/> : <></>
               }
               {uioverviewoutput.oType === "transaction" ? 
                 <Transaction hash={transaction_} /> : <></>

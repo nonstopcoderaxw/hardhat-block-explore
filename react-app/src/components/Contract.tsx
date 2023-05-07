@@ -4,7 +4,7 @@ import { getURLParam, URLParam } from "../utils/utils";
 import { useLocation } from 'react-router-dom';
 import Comboboxes, { UIComboboxesInput } from "./tailwindui/Comboboxes"
 import Alert from "./tailwindui/Alert"
-import { useState } from 'react'
+import { useState, useEffect} from 'react'
 import { useAppSelector } from '../appContext/hooks'
 import { selectAppState } from "../appContext/appContextSlice"
 import { Abi, Function} from "../utils/abi"
@@ -37,7 +37,7 @@ export type UIContractOuput = {
   inputs: UICallParam[]
 }
 
-export default function Contract({address, implAddress, selectedFuncIndex}: UIContractInput) {
+export default function Contract({address, implAddress, selectedFuncIndex, contractAddress_, setContractAddress, query, setQuery, selected, setSelected}) {
 
     address = (address && address != null) ? (new Address(address)).value : null;
     implAddress = (implAddress && implAddress != null) ? (new Address(implAddress)).value : null;
@@ -46,14 +46,10 @@ export default function Contract({address, implAddress, selectedFuncIndex}: UICo
     let _appState = useAppSelector(selectAppState);
     if (!_appState) throw (new Error("NULL_APP_STATE"));
     const urlParam: URLParam = _appState.urlParam;
-
-    //const [ contractAddress_, setContractAddress ] = useState(address);
-    //const [ implAddress_, setImplAddress ] = useState(implAddress);
-    var contractAddress_ = address;
-    var implAddress_ = implAddress;
-    console.log(contractAddress_);
+    //[ contractAddress_, setContractAddress ] = useState(address);
+    const [ implAddress_, setImplAddress ] = useState(implAddress);
     const [ selectedFuncIndex_, setSelectedFuncIndex ] = useState(Number(selectedFuncIndex));
-    
+
     const { data: gqlData0, loading: gqlLoading0, error: gqlError0 } = useQuery(ContractDocument, {
       variables: { address: contractAddress_ as string },
       skip: !address || address == null 
@@ -80,14 +76,12 @@ export default function Contract({address, implAddress, selectedFuncIndex}: UICo
 
     const comboboxesOnChangeHandler = {
       proxy: (address) => {
-        //setContractAddress(address)
-        contractAddress_ = address;
+        setContractAddress(address)
         const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/Contract/${address}/${urlParam.implId}/${urlParam.fIndex}/${urlParam.frBN}/${urlParam.toBN}`;
         window.history.pushState({ path: bookmark }, '', bookmark);
       },
       implementation: (address) => {
-        //setImplAddress(address);
-        implAddress_ = address
+        setImplAddress(address);
         setSelectedFuncIndex(0);
         const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/Contract/${urlParam.oId}/${address}`;
         window.history.pushState({ path: bookmark }, '', bookmark);
@@ -126,7 +120,9 @@ export default function Contract({address, implAddress, selectedFuncIndex}: UICo
     const uicomboboxesContract: UIComboboxesInput = {
       items: proxyComboboxesItems,
       defaultItem: contractAddress_,
-      onChange: comboboxesOnChangeHandler.proxy
+      onChange: comboboxesOnChangeHandler.proxy,
+      _query: { value: query, setter: setQuery },
+      _selected: { value: selected, setter: setSelected }
     }
 
     const uicomboboxesImpl: UIComboboxesInput = {
@@ -156,7 +152,6 @@ export default function Contract({address, implAddress, selectedFuncIndex}: UICo
       inputs: uiinputs
     }
 
-
     return (
       <>
         <div>
@@ -169,7 +164,7 @@ export default function Contract({address, implAddress, selectedFuncIndex}: UICo
             <div className="border-t border-gray-100 px-4 py-6 sm:col-span-2 sm:px-0">
               <dt className="text-sm font-medium leading-6 text-gray-900">proxy</dt>
               <dd className="mt-1 text-sm leading-6 text-gray-700 sm:mt-2">             
-                <Comboboxes items={uidata.Comboboxes.contract.items} defaultItem={uidata.Comboboxes.contract.defaultItem} onChange={uidata.Comboboxes.contract.onChange} />
+                <Comboboxes items={uidata.Comboboxes.contract.items} defaultItem={uidata.Comboboxes.contract.defaultItem} onChange={uidata.Comboboxes.contract.onChange} _query={uicomboboxesContract._query} _selected={uicomboboxesContract._selected}/>
               </dd>
             </div>
           </dl>

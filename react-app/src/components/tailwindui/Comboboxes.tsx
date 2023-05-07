@@ -4,16 +4,25 @@ import { Combobox } from '@headlessui/react'
 import { classNames } from "../../utils/utils"
 
 
+export type State<T> = {
+  value: T,
+  setter: React.Dispatch<React.SetStateAction<T>>
+}
+
 export type UIComboboxesInput = {
     items: string[],
     defaultItem: string | null,
-    onChange: (address: string) => void | null
+    onChange: (address: string) => void | null,
+    _query? : State<string>,
+    _selected? : State<string>
 }
 
-export default function Comboboxes({items, defaultItem, onChange}: UIComboboxesInput) {
-
-  const [query, setQuery] = useState('')
-  const [selected, setSelected] = useState(defaultItem)
+export default function Comboboxes({items, defaultItem, onChange, _query, _selected}: UIComboboxesInput) {
+if(!_query) return null;
+  // const [query, setQuery] = useState('')
+  // const [selected, setSelected] = useState(defaultItem)
+  const [ query, setQuery ] = [ _query!.value, _query!.setter ];
+  const [ selected, setSelected ] = [ _selected!.value, _selected!.setter ];
 
   const onChangeHandlder = (item) => {
     onChange(item);
