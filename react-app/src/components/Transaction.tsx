@@ -1,27 +1,62 @@
 import { TransactionDocument, Transaction as Transaction_, TransactionReceipt as TransactionReceipt_, Log as Log_ } from "../graphql/generated";
 import { useQuery } from "@apollo/client";
+import { State } from "../utils/utils";
+import { useState, useEffect } from "react"
 
-export default function Transaction({hash}) {
-  const { data, loading, error } = useQuery(TransactionDocument, {
-    variables: { hash: hash }
+
+
+export type TransactionInputs = {
+  defaultHash: string | null,
+  exportState?: (state: TransactionState) => void
+}
+
+export type TransactionState = {
+  hash: State<string | null> | null
+}
+
+export default function Transaction({defaultHash, exportState}: TransactionInputs) {
+
+  const [ hash, setHash ] = useState(defaultHash);
+
+  useEffect(() => {
+    const state: TransactionState = {
+      hash: [ hash, setHash ]
+    }
+
+    if(exportState) exportState(state);
+  }, [hash, setHash, exportState])
+ 
+  const { data: gqlData, loading, error } = useQuery(TransactionDocument, {
+    variables: { hash: hash! },
+    skip: hash === null
   }); 
 
-  if (loading) return (
-    <>
-    </>
+  if (!loading && error) throw(error)
+  
+  if (!gqlData) return (
+      <div>
+        <div className="px-4 sm:px-0">
+          <h3 className="text-base font-semibold leading-7 text-gray-900">Transaction Details</h3>
+        </div>
+      </div>
   );
 
-  if (error) throw(error)
 
-  const transaction: Transaction_ = data!.transaction as Transaction_
-  const transactionReceipt: TransactionReceipt_ = transaction.transactionReceipt as TransactionReceipt_
-  const logs: Log_[] = transactionReceipt.logs as Log_[]
+  var transaction: Transaction_;
+  var transactionReceipt: TransactionReceipt_;
+  var logs: Log_[];
+  var decodedLogs: any[];
+
+  transaction = gqlData.transaction as Transaction_
+  transactionReceipt = transaction.transactionReceipt as TransactionReceipt_
+  logs = transactionReceipt.logs as Log_[]
   
-  const decodedLogs = logs.map((item: Log_) => {
+  decodedLogs = logs.map((item: Log_) => {
     if(item.decodedLog) return JSON.parse(item.decodedLog)
     return null;
   })
 
+  
   return (
     <div>
       <div className="px-4 sm:px-0">

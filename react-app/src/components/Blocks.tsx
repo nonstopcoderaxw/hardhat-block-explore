@@ -1,27 +1,22 @@
-import { useLocation } from 'react-router-dom';
 import { classNames, getURLParam, URLParam } from "../utils/utils";
-import { useAppSelector } from '../appContext/hooks'
-import { selectAppState } from "../appContext/appContextSlice"
 
-type UIBlock = {
+type Block = {
   number: number,
   timestamp: number
 }
 
-export type UIBlocksInput = {
-  items: UIBlock[];
-  onClick: (blockNumber) => void
+export type BlocksInputs = {
+  items: Block[];
+  onClick: (blockNumber: number) => void
 }
 
-export default function Blocks({items, onClick}: UIBlocksInput) {
-  let _appState = useAppSelector(selectAppState);
-  if (!_appState) throw (new Error("NULL_APP_STATE"));
-  const urlParam: URLParam = _appState.urlParam;
+export default function Blocks({items, onClick}: BlocksInputs) {
 
   const onClickHandler = (e) => {
     e.preventDefault();
     const blockNumber = e.currentTarget.getAttribute("data-blocknumber");
-    onClick(blockNumber);
+    onClick(Number(blockNumber));
+    const urlParam: URLParam = getURLParam(window.location.hash);
     const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/block/${blockNumber}`;
     window.history.pushState({ path: bookmark }, '', bookmark);
   }

@@ -1,40 +1,47 @@
-import Accounts from "../../components/Accounts"
-import Contracts, { UIContractsInput } from "../../components/Contracts"
-import Transactions, { UITransactionsInput } from "../../components/Transactions"
-import Blocks, { UIBlocksInput } from "../../components/Blocks"
-import Block, { UIBlockInput } from "../../components/Block"
-import Account, { UIAccountInput, _setAddress } from "../../components/Account"
-import Contract from "../../components/Contract"
-import Transaction from "../../components/Transaction"
-import Tabs, { UITabsInput } from "../../components/tailwindui/Tabs"
+import Accounts, { AccountsInputs } from "../../components/Accounts"
+import Contracts, { ContractsInputs } from "../../components/Contracts"
+import Transactions, { TransactionsInputs } from "../../components/Transactions"
+import Blocks, { BlocksInputs } from "../../components/Blocks"
+import Block, { BlockInputs, BlockState } from "../../components/Block"
+import Account, { AccountInputs, AccountState } from "../../components/Account"
+import Contract, { ContractState, ContractInputs } from "../../components/Contract"
+import Transaction, { TransactionInputs, TransactionState } from "../../components/Transaction"
+import Tabs, { TabsInputs } from "../../components/tailwindui/Tabs"
 import { useAppSelector } from '../../appContext/hooks'
 import { selectAppState } from "../../appContext/appContextSlice"
 import { Account as Account_, Transaction as Transaction_, Block as Block_ } from "../../graphql/generated";
-import { getURLParam, URLParam } from "../../utils/utils";
-import { useLocation } from 'react-router-dom';
-import { useState, useEffect, useLayoutEffect } from 'react'
+import { useState } from 'react'
 import { Address } from "../../utils/Address"
 
-export type UIOverviewInput = {
+export type OverviewInputs = {
   oTab: number | null,
   oType: string | null,
   oId: string | null,
   implId: string | null,
-  fIndex: number | null,
-  frBN: number | null,
-  toBN: number | null
+  fIndex: number | null
 };
 
-type UIOverviewOutput = {
-  uitabs: UITabsInput,
+type OverviewOutputs = {
+  tabsInputs: TabsInputs,
   oType: string,
-  uicontracts: UIContractsInput,
-  uitransactions: UITransactionsInput,
-  uiblocks: UIBlocksInput,
-  uiblock: UIBlockInput
+  accountsInputs: AccountsInputs,
+  contractsInputs: ContractsInputs,
+  transactionsInputs: TransactionsInputs,
+  blocksInputs: BlocksInputs,
+  blockInputs: BlockInputs,
+  accountInputs: AccountInputs,
+  contractInputs: ContractInputs,
+  transactionInputs: TransactionInputs,
 }
 
-export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}: UIOverviewInput) {
+type OverviewState = {
+  account: AccountState | null,
+  contract: ContractState | null,
+  transaction: TransactionState | null,
+  block: BlockState | null
+}
+
+export default function Overview({oTab, oType, oId, implId, fIndex}: OverviewInputs) {
   // global
   let _appState = useAppSelector(selectAppState);
   if (!_appState) throw (new Error("NULL_APP_STATE"));
@@ -44,13 +51,10 @@ export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}:
   const blocks: Block_[] = _appState.blocks as Block_[];
   
   // check
-  if (oTab && ![0, 1, 2, 3].includes(oTab)) throw ("invalid oTab");
-  if (oType && !["account","contract","transaction","block"].includes(oType)) throw ("invalid oType");
-  if (oId) try { oId = (new Address(oId)).value; } catch { throw ("invalid oId") }
-  if (implId) try { implId = (new Address(implId as string)).value } catch { throw ("invalid implId") }
-  if (fIndex) try { Number(fIndex) } catch { throw ("invalid fIndex") }
-  if (frBN) try { Number(frBN) } catch { throw ("invalid frBN") }
-  if (toBN) try { Number(toBN) } catch { throw ("invalid toBN") }
+  if (oTab && ![0, 1, 2, 3].includes(oTab)) throw (new Error("invalid oTab"));
+  if (oType && !["account","contract","transaction","block"].includes(oType)) throw (new Error("invalid oType"));
+  if (implId) try { implId = (new Address(implId as string)).value } catch { throw (new Error("invalid implId")) }
+  if (fIndex) try { Number(fIndex) } catch { throw (new Error("invalid fIndex")) }
   
   // default
   if (!oTab) oTab = 0;
@@ -59,57 +63,84 @@ export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}:
 
   const [ oTab_, setOTab ] = useState(Number(oTab));
   const [ oType_, setType ] = useState(oType);
-  const [ account_, setAccount ] = useState(oType == "account" ? oId : null);
-  const [ contract_, setContract ] = useState(oType == "contract" ? oId : null);
-  const [ implContract_, setImplContract ] = useState(implId);
-  const [ fIndex_, setFIndex ] = useState<number | null>(Number(fIndex));
-  const [ transaction_, setTransaction ] = useState(oType == "transaction" ? oId : null);
-  const [ block_, setBlock ] = useState<number | null>(oType == "block" ? Number(oId) : null);
+  const [ oId_ , setOId] = useState(oId);
+  const [ , setImplId] = useState(implId);
+  const [ fIndex_ , setFIndex] = useState(fIndex);
+
+  const state: OverviewState = {
+    account: null, 
+    contract: null,
+    transaction: null,
+    block: null
+  }
+
+  const exportStateHandler = {
+    account: (accountState: AccountState) => {
+      state.account = accountState;
+    }, 
+    contract: (contractState: ContractState) => {
+      state.contract = contractState;
+    },
+    transaction: (transactionState: TransactionState) => {
+      state.transaction = transactionState;
+    },
+    block: (blockState: BlockState) => {
+      state.block = blockState;
+    }
+  }
 
   const handlers = {
     accounts: (id) => {
       setType("account");
-      setAccount(id);
+      setOId(id);
+      if (state.account && state.account.address) state.account.address[1](id);
     },
     contracts: (id) => {
+      if (id === oId_) return null;
+
       setType("contract");
-      setContract(id);
-      setImplContract(id);
-      console.log(id);
-      setContractAddress(id);
-      setSelected(id);
-      setQuery(id);
+      setOId(id);
+      setImplId(id);
+      setFIndex(null);
+      if (state.contract && state.contract.contractAddress && state.contract.implAddress) {
+        state.contract.contractAddress[1](id);
+        state.contract.implAddress[1](id);
+        if (state.contract.selectedFuncIndex) state.contract.selectedFuncIndex[1](0);
+      }
     },
     transactions: (id) => {
+      if (id === oId_) return null;
+
       setType("transaction");
-      setTransaction(id);
+      setOId(id);
+      if (state.transaction && state.transaction.hash) state.transaction.hash[1](id);
     },
     blocks: (id) => {
+      if (id === oId_) return null;
       setType("block");
-      setBlock(id);
+      setOId(id);
+      if (state.block && state.block.blockNumber) state.block.blockNumber[1](Number(id));
     },
     account: (id) => {
+      if (id === oId_) return null;
+
       setType("transaction");
-      setTransaction(id);
+      setOId(id);
+
+      if (state.transaction && state.transaction.hash) state.transaction.hash[1](id);
     },
     contract: (id) => {
-      setType("transaction");
-      setTransaction(id);
+      // setType("transaction");
+      // setTransaction(id);
     },
-    transaction: (id) => {
-      setType("transaction");
-      setTransaction(id);
-    },
-    block: (id) => {
-      setType("transaction");
-      setTransaction(id);
-    },
+    transaction: (id) => {},
+    block: (id) => {},
     tab: (index: number) => {
       setOTab(index);
     }
   }
 
-  const uitabs: UITabsInput = {
+  const tabsInputs: TabsInputs = {
     tabs: [
       { name: 'EOAs', current: false },
       { name: 'Contracts', current: false },
@@ -120,7 +151,17 @@ export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}:
     onClick: handlers.tab
   }
 
-  const uicontracts: UIContractsInput = {
+  const accountsInputs: AccountsInputs = {
+    items: accounts.map((item) => {
+        return { 
+          address: item.address,
+          balance: item.balance
+        }
+    }),
+    onClick: handlers.accounts
+  }
+
+  const contractsInputs: ContractsInputs = {
     items: contracts.map((item) => {
       return {
         address: item.address,
@@ -131,7 +172,7 @@ export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}:
     onClick: handlers.contracts
   }
 
-  const uitransactions: UITransactionsInput = {
+  const transactionsInputs: TransactionsInputs = {
     items: transactions.map((item) => {
       return {
         hash: item.hash,
@@ -141,42 +182,52 @@ export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}:
     onClick: handlers.transactions
   }
 
-  const uiblocks: UIBlocksInput = {
+  const blocksInputs: BlocksInputs = {
     items: blocks.map((item) => {
       return {
         number: Number(item.number),
         timestamp: item.timestamp
       }
     }),
-    onClick: handlers.blocks
+    onClick: handlers.blocks,
   }
 
-  const uiaccount: UIAccountInput = {
-    address: account_,
-    onClick: handlers.transaction,
-    newAddress: account_
+  const accountInputs: AccountInputs = {
+    defaultAddress: oType_ === "account" ? oId_ : null,
+    onClick: handlers.account,
+    exportState: exportStateHandler.account
   }
 
-  const uiblock: UIBlockInput = {
-    blockNumber: block_,
-    onClick: handlers.transaction
+  const contractInputs: ContractInputs = {
+    defaultContractAddress: oType_ === "contract" ? oId_ : null,
+    defaultImplAddress: oType_ === "contract" ? oId_ : null,
+    defaultSelectedFuncIndex: fIndex_,
+    exportState: exportStateHandler.contract
   }
 
-  const uioverviewoutput: UIOverviewOutput = {
-    uitabs: uitabs,
+  const blockInputs: BlockInputs = {
+    defaultBlockNumber: oType_ === "block" ? Number(oId_) : null,
+    onClick: handlers.transactions,
+    exportState: exportStateHandler.block
+  }
+
+  const transactionInputs: TransactionInputs = {
+    defaultHash: oType_ === "transaction" ? oId_ : null,
+    exportState: exportStateHandler.transaction
+  }
+
+  const overviewOutputs: OverviewOutputs = {
+    tabsInputs: tabsInputs,
     oType: oType_,
-    uicontracts: uicontracts,
-    uitransactions: uitransactions,
-    uiblocks: uiblocks,
-    uiblock: uiblock
+    accountsInputs: accountsInputs,
+    contractsInputs: contractsInputs,
+    transactionsInputs: transactionsInputs,
+    blocksInputs: blocksInputs,
+    blockInputs: blockInputs,
+    accountInputs: accountInputs,
+    contractInputs: contractInputs,
+    transactionInputs: transactionInputs
   }
-
-
-
-  const [ contractAddress_, setContractAddress ] = useState(contract_);
-  const [query, setQuery] = useState<string>('')
-  const [selected, setSelected] = useState<string | null>(contract_)
-
 
   return (
      <>
@@ -184,37 +235,37 @@ export default function Overview({oTab, oType, oId, implId, fIndex, frBN, toBN}:
           {/* Left sidebar & main wrapper */}
           <div className="flex-1 w-1/2 full-screen-height-left scrollable">
             <div className="sticky top-0 z-50 px-4 sm:px-6 lg:pl-8 xl:flex-1 xl:pl-6">
-              <Tabs tabs={uioverviewoutput.uitabs.tabs} currentTabIndex={uioverviewoutput.uitabs.currentTabIndex} onClick={uioverviewoutput.uitabs.onClick} />
+              <Tabs tabs={overviewOutputs.tabsInputs.tabs} currentTabIndex={overviewOutputs.tabsInputs.currentTabIndex} onClick={overviewOutputs.tabsInputs.onClick} />
             </div>
 
             <div className="px-4 py-6 sm:px-6 lg:pl-8 xl:flex-1 xl:pl-6" data-index="0">
-              {uioverviewoutput.uitabs.currentTabIndex === 0 ?
-                <Accounts items={accounts} onClick={handlers.accounts}/> : <></>
+              {overviewOutputs.tabsInputs.currentTabIndex === 0 ?
+                <Accounts items={overviewOutputs.accountsInputs.items} onClick={overviewOutputs.accountsInputs.onClick}/> : <></>
               }
-              {uioverviewoutput.uitabs.currentTabIndex === 1 ?
-                <Contracts items={uioverviewoutput.uicontracts.items} onClick={uioverviewoutput.uicontracts.onClick} />  : <></>
+              {overviewOutputs.tabsInputs.currentTabIndex === 1 ?
+                <Contracts items={overviewOutputs.contractsInputs.items} onClick={overviewOutputs.contractsInputs.onClick} />  : <></>
               }
-              {uioverviewoutput.uitabs.currentTabIndex === 2 ?
-                <Transactions items={uioverviewoutput.uitransactions.items} onClick={uioverviewoutput.uitransactions.onClick} /> : <></>
+              {overviewOutputs.tabsInputs.currentTabIndex === 2 ?
+                <Transactions items={overviewOutputs.transactionsInputs.items} onClick={overviewOutputs.transactionsInputs.onClick} /> : <></>
               }
-              {uioverviewoutput.uitabs.currentTabIndex === 3 ?
-                <Blocks items={uioverviewoutput.uiblocks.items} onClick={uioverviewoutput.uiblocks.onClick} /> : <></>
+              {overviewOutputs.tabsInputs.currentTabIndex === 3 ?
+                <Blocks items={overviewOutputs.blocksInputs.items} onClick={overviewOutputs.blocksInputs.onClick} /> : <></>
               }
             </div>
           </div>
           <div className="scrollable full-screen-height-right shrink-0 border-t border-gray-200 px-4 py-6 sm:px-6 w-1/2 lg:border-l lg:border-t-0 lg:pr-8 xl:pr-6">
             <div className="">
-              {uioverviewoutput.oType === "block" ? 
-                <Block blockNumber={uioverviewoutput.uiblock.blockNumber} onClick={uioverviewoutput.uiblock.onClick}/> : <></>
+              {overviewOutputs.oType === "block" ? 
+                <Block defaultBlockNumber={overviewOutputs.blockInputs.defaultBlockNumber} onClick={overviewOutputs.blockInputs.onClick} exportState={overviewOutputs.blockInputs.exportState}/> : <></>
               }
-              {uioverviewoutput.oType === "account" ? 
-                <Account address={account_} onClick={handlers.account} newAddress={account_} /> : <></>
+              {overviewOutputs.oType === "account" ? 
+                <Account defaultAddress={overviewOutputs.accountInputs.defaultAddress} onClick={overviewOutputs.accountInputs.onClick} exportState={overviewOutputs.accountInputs.exportState}/> : <></>
               }
-              {uioverviewoutput.oType === "contract" ? 
-                <Contract address={contract_} implAddress={implContract_} selectedFuncIndex={fIndex_} contractAddress_={contractAddress_} setContractAddress={setContractAddress} query={query} setQuery={setQuery} selected={selected} setSelected={setSelected}/> : <></>
+              {overviewOutputs.oType === "contract" ? 
+                <Contract defaultContractAddress={overviewOutputs.contractInputs.defaultContractAddress} defaultImplAddress={overviewOutputs.contractInputs.defaultImplAddress} defaultSelectedFuncIndex={overviewOutputs.contractInputs.defaultSelectedFuncIndex} exportState={overviewOutputs.contractInputs.exportState} /> : <></>
               }
-              {uioverviewoutput.oType === "transaction" ? 
-                <Transaction hash={transaction_} /> : <></>
+              {overviewOutputs.oType === "transaction" ? 
+                <Transaction defaultHash={overviewOutputs.transactionInputs.defaultHash} exportState={transactionInputs.exportState} /> : <></>
               }
             </div>
           </div>

@@ -1,54 +1,61 @@
-import { useState } from 'react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { Combobox } from '@headlessui/react'
-import { classNames } from "../../utils/utils"
+import { classNames, State } from "../../utils/utils"
+import { useState } from "react"
 
-
-export type State<T> = {
-  value: T,
-  setter: React.Dispatch<React.SetStateAction<T>>
-}
-
-export type UIComboboxesInput = {
+export type ComboboxesInputs = {
     items: string[],
-    defaultItem: string | null,
-    onChange: (address: string) => void | null,
-    _query? : State<string>,
-    _selected? : State<string>
+    defaultItem: string,
+    onChange: (address: string) => void,
+    exportState?: (state: ComboboxesState) => void
 }
 
-export default function Comboboxes({items, defaultItem, onChange, _query, _selected}: UIComboboxesInput) {
-if(!_query) return null;
-  // const [query, setQuery] = useState('')
-  // const [selected, setSelected] = useState(defaultItem)
-  const [ query, setQuery ] = [ _query!.value, _query!.setter ];
-  const [ selected, setSelected ] = [ _selected!.value, _selected!.setter ];
+export type ComboboxesState = {
+    query: State<string>,
+    selected: State<string>
+}
+
+export default function Comboboxes({items, defaultItem, onChange, exportState}: ComboboxesInputs) {
+  const [ query, setQuery ] = useState<string>("");
+  const [ selected, setSelected ] = useState<string>(defaultItem);
+
+  const state: ComboboxesState = {
+    query: [ query, setQuery ],
+    selected: [ selected, setSelected ]
+  }
+
+  if (exportState) exportState(state);
+
+  const filtered =
+    (query === '')
+      ? items
+      : items.filter((item) => {
+          return item.includes(query)
+        })
 
   const onChangeHandlder = (item) => {
     onChange(item);
     setSelected(item);
   }
-
-  const filtered =
-    query === ''
-      ? items
-      : items.filter((item) => {
-          return item.includes(query)
-        })
-  const displayValueHandler = (item) => {
-    return item;
+  const displayValueHandler = (item) => { return item; }
+  const buttonOnClickHandler = (e) => setQuery("");
+  const inputOnChangeHandler = (event) => {
+    setQuery(event.target.value)
   }
+  const inputOnBlur = (event) => { 
+    setSelected(event.target.value) 
+  };
 
   return (
     <Combobox as="div" value={selected} onChange={onChangeHandlder}>
       <div className="relative mt-2">
         <Combobox.Input
           className="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-10 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-          onChange={(event) => { setQuery(event.target.value)} } 
+          onChange={inputOnChangeHandler} 
           displayValue={displayValueHandler}
-          onBlur={(event)=>{setSelected(event.target.value)}}
+          onBlur={inputOnBlur}
         />
-        <Combobox.Button onClick={(event) => setQuery("")} className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
+        <Combobox.Button onClick={buttonOnClickHandler} className="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 focus:outline-none">
           <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
         </Combobox.Button>
 

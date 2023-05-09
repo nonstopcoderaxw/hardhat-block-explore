@@ -1,26 +1,22 @@
 import { classNames, getURLParam, URLParam } from "../utils/utils";
-import { useLocation } from 'react-router-dom';
-import { useAppSelector } from '../appContext/hooks'
-import { selectAppState } from "../appContext/appContextSlice"
 
-type UITransaction = {
+type Transaction = {
   hash: string,
   timestamp: number
 }
 
-export type UITransactionsInput = {
-  items: UITransaction[],
+export type TransactionsInputs = {
+  items: Transaction[],
   onClick: (hash) => void
 }
 
-export default function Transactions({items, onClick}: UITransactionsInput) {
-  let _appState = useAppSelector(selectAppState);
-  if (!_appState) throw (new Error("NULL_APP_STATE"));
-  const urlParam: URLParam = _appState.urlParam;
-
+export default function Transactions({items, onClick}: TransactionsInputs) {
+  
   const nav = (e) => {
     e.preventDefault();
-    const hash = e.currentTarget.getAttribute("data-hash")
+    const urlParam: URLParam = getURLParam(window.location.hash);
+    const hash = e.currentTarget.getAttribute("data-hash");
+    onClick(hash);
     const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/transaction/${hash}`;
     window.history.pushState({ path: bookmark }, '', bookmark);
   }

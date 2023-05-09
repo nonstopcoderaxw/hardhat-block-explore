@@ -1,45 +1,24 @@
-import { useLocation } from 'react-router-dom';
 import { classNames, getURLParam, URLParam } from "../utils/utils";
-import { useAppSelector } from '../appContext/hooks'
-import { selectAppState } from "../appContext/appContextSlice"
-import { AppState, updateURLParams } from "../appContext/appContextSlice"
-import { useAppDispatch } from '../appContext/hooks';
 
-
-
-
-type UIAccount = {
+type Account = {
   address: string,
   balance: string
 }
 
-export type UIAccountsInput = {
-  items: UIAccount[],
+export type AccountsInputs = {
+  items: Account[],
   onClick: (address) => void
 }
 
-export default function Accounts({items, onClick}: UIAccountsInput) {
-  const dispatch = useAppDispatch();
-
-  let _appState = useAppSelector(selectAppState);
-  if (!_appState) throw (new Error("NULL_APP_STATE"));
-  const urlParam: URLParam = _appState.urlParam;
+export default function Accounts({items, onClick}: AccountsInputs) {
 
   const nav = (e) => {
     e.preventDefault();
     const address = e.currentTarget.getAttribute("data-address")
     onClick(address);
-    
+    const urlParam: URLParam = getURLParam(window.location.hash);
     const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/account/${address}`;
     window.history.pushState({ path: bookmark }, '', bookmark);
-    // window.location.hash = `#${urlParam.nab}/${urlParam.oTab}/account/${address}`;
-
-    // dispatch(updateURLParams({
-    //     nab: urlParam.nab,
-    //     oTab: urlParam.oTab,
-    //     oId: address
-    // }))
-
   }
 
   return (
