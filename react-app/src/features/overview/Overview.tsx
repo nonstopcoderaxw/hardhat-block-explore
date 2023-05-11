@@ -91,26 +91,32 @@ export default function Overview({oTab, oType, oId, implId, fIndex}: OverviewInp
 
   const handlers = {
     accounts: (id) => {
+      if (id === oId_) return null;
       setType("account");
       setOId(id);
       if (state.account && state.account.address) state.account.address[1](id);
     },
     contracts: (id) => {
       if (id === oId_) return null;
-
       setType("contract");
       setOId(id);
       setImplId(id);
       setFIndex(null);
-      if (state.contract && state.contract.contractAddress && state.contract.implAddress) {
+      if (state.contract 
+          && state.contract.contractAddress 
+          && state.contract.implAddress
+          && state.contract.selectedFuncIndex
+          //&& state.contract.params
+        ) {
         state.contract.contractAddress[1](id);
         state.contract.implAddress[1](id);
-        if (state.contract.selectedFuncIndex) state.contract.selectedFuncIndex[1](0);
+        state.contract.selectedFuncIndex[1](null);
+        //state.contract.params[1]({});
       }
+      if (state.contract && state.contract.selectedFuncIndex) state.contract.selectedFuncIndex[1](0);
     },
     transactions: (id) => {
       if (id === oId_) return null;
-
       setType("transaction");
       setOId(id);
       if (state.transaction && state.transaction.hash) state.transaction.hash[1](id);
@@ -123,10 +129,8 @@ export default function Overview({oTab, oType, oId, implId, fIndex}: OverviewInp
     },
     account: (id) => {
       if (id === oId_) return null;
-
       setType("transaction");
       setOId(id);
-
       if (state.transaction && state.transaction.hash) state.transaction.hash[1](id);
     },
     contract: (id) => {
@@ -253,7 +257,7 @@ export default function Overview({oTab, oType, oId, implId, fIndex}: OverviewInp
               }
             </div>
           </div>
-          <div className="scrollable full-screen-height-right shrink-0 border-t border-gray-200 px-4 py-6 sm:px-6 w-1/2 lg:border-l lg:border-t-0 lg:pr-8 xl:pr-6">
+          <div id="right-section" className="scrollable full-screen-height-right shrink-0 border-t border-gray-200 px-4 py-6 sm:px-6 w-1/2 lg:border-l lg:border-t-0 lg:pr-8 xl:pr-6">
             <div className="">
               {overviewOutputs.oType === "block" ? 
                 <Block defaultBlockNumber={overviewOutputs.blockInputs.defaultBlockNumber} onClick={overviewOutputs.blockInputs.onClick} exportState={overviewOutputs.blockInputs.exportState}/> : <></>

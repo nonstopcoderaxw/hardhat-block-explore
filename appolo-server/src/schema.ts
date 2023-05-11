@@ -7,7 +7,7 @@ export const typeDefs = gql`
     account(address: ID!): Account
 
     contracts: [Account!]!
-    contract(address: ID!): Account
+    contract(address: ID!): Account 
 
     transactions: [Transaction]!
     transaction(hash: ID!): Transaction
@@ -20,6 +20,8 @@ export const typeDefs = gql`
 
   type Mutation {
     importABIs(addresses: [String]!, names: [String]!, abis: [String]!): RestResponse!
+    hh_send(data: String!, value: String!, from: String!, to: String): String
+    hh_read(contractAddress: String!, funcName: String!, abi: String!, params: String!, blockTag: Int, address: String!): String
   }
 
   type RestResponse {

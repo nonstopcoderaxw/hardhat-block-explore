@@ -5,6 +5,7 @@ import { resolvers } from "./resolvers"
 import { prisma } from "./datasources/prisma"
 import { prisma as prismaDev } from "./datasources/prismaDev"
 import { ABIServices } from "./datasources/ABIServices";
+import { HardhatNodeServices } from "./datasources/HardhatNodeServices";
 
 
 const localPlugin = {
@@ -18,7 +19,8 @@ async function startApolloServer() {
       return {
         dataSources: {
           prisma: process.env.PROD == "true" ? prisma : prismaDev,
-          abiServices: new ABIServices()
+          abiServices: new ABIServices(),
+          hardhatNodeServices: new HardhatNodeServices(process.env.NODE_ENDPOINT!)
         },
       };
     },

@@ -7,7 +7,12 @@ export const resolvers = {
       return dataSources.prisma.account.findMany({
         where: {
           isContract: false
-        }
+        },
+        orderBy: [
+          {
+            address: 'desc',
+          }
+        ]
       });
     },
 
@@ -27,7 +32,12 @@ export const resolvers = {
       return dataSources.prisma.account.findMany({
         where: {
           isContract: true
-        }
+        },
+        orderBy: [
+          {
+            address: 'desc',
+          }
+        ]
       });
     },
 
@@ -128,6 +138,12 @@ export const resolvers = {
       return {
           status: "200"
       }
+    },
+    hh_send: (_: any, { data, value, from, to }: any, { dataSources }: any) => {
+      return dataSources.hardhatNodeServices.send(data, value, from, to);
+    },
+    hh_read: (_: any, { contractAddress, funcName, abi, params, blockTag, address }: any, { dataSources }: any) => {
+      return dataSources.hardhatNodeServices.read(contractAddress, funcName, abi, params, blockTag, address);
     },
   },
 

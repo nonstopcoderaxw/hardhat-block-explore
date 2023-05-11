@@ -1,0 +1,3 @@
+mutation hh_read($contractAddress: String!, $funcName: String!, $abi: String!, $params: String!, $address: String!, $blockTag: Int) {
+  hh_read(contractAddress: $contractAddress, funcName: $funcName, abi: $abi, params: $params, address: $address, blockTag: $blockTag)
+}

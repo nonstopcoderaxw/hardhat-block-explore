@@ -1,0 +1,3 @@
+mutation Hh_send($data: String!, $value: String!, $from: String!, $to: String) {
+  hh_send(data: $data, value: $value, from: $from, to: $to)
+}

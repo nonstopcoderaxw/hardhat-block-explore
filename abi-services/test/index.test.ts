@@ -2,8 +2,6 @@ import axios from "axios";
 import { ABIServices } from "../src/ABIServices";
 import { Address } from "../src/Address";
 
-
-
 // this test requires express server running!
 describe("index.test.ts", () => {
 	const abi = `[{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"_address","type":"address"}],"name":"ContractCreated","type":"event"},{"inputs":[{"internalType":"address payable","name":"to","type":"address"}],"name":"send","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"var1","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]`;

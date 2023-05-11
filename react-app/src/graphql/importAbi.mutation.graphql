@@ -1,0 +1,5 @@
+mutation ImportABIs($addresses: [String]!, $abis: [String]!, $names: [String]!) {
+  importABIs(addresses: $addresses, abis: $abis, names: $names) {
+    status
+  }
+}

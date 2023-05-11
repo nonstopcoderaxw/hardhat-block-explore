@@ -31,30 +31,41 @@ export default function Transaction({defaultHash, exportState}: TransactionInput
     skip: hash === null
   }); 
 
-  if (!loading && error) throw(error)
+  if (error) throw(error)
   
-  if (!gqlData) return (
+  if (loading) return (
       <div>
         <div className="px-4 sm:px-0">
           <h3 className="text-base font-semibold leading-7 text-gray-900">Transaction Details</h3>
+          <p>Loading...</p>
         </div>
       </div>
   );
-
-
+  
   var transaction: Transaction_;
   var transactionReceipt: TransactionReceipt_;
   var logs: Log_[];
   var decodedLogs: any[];
 
-  transaction = gqlData.transaction as Transaction_
-  transactionReceipt = transaction.transactionReceipt as TransactionReceipt_
-  logs = transactionReceipt.logs as Log_[]
+  transaction = gqlData!.transaction as Transaction_
   
+  if (!transaction) return (
+      <div>
+        <div className="px-4 sm:px-0">
+          <h3 className="text-base font-semibold leading-7 text-gray-900">Reindexing...Please Refresh...</h3>
+        </div>
+      </div>
+  );
+
+  transactionReceipt = transaction.transactionReceipt as TransactionReceipt_
+
+  logs = transactionReceipt.logs as Log_[]
+
   decodedLogs = logs.map((item: Log_) => {
     if(item.decodedLog) return JSON.parse(item.decodedLog)
     return null;
   })
+  
 
   
   return (

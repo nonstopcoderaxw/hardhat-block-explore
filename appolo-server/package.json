@@ -38,6 +38,6 @@
     "ts:build": "tsc -w --project tsconfig.build.json", 
     "graphql:test": "tsc && jest",
     "prisma:generate": "npx prisma generate",
-    "nodemon:start:dev": "npx nodemon"
+    "nodemon:start:prod": "npx nodemon"
   }
 }

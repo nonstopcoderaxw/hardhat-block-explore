@@ -7,7 +7,12 @@ exports.resolvers = {
             return dataSources.prisma.account.findMany({
                 where: {
                     isContract: false
-                }
+                },
+                orderBy: [
+                    {
+                        address: 'desc',
+                    }
+                ]
             });
         },
         account: async (_, { address }, { dataSources }) => {
@@ -25,7 +30,12 @@ exports.resolvers = {
             return dataSources.prisma.account.findMany({
                 where: {
                     isContract: true
-                }
+                },
+                orderBy: [
+                    {
+                        address: 'desc',
+                    }
+                ]
             });
         },
         contract: async (_, { address }, { dataSources }) => {
@@ -120,6 +130,12 @@ exports.resolvers = {
                 status: "200"
             };
         },
+        hh_send: (_, { data, value, from, to }, { dataSources }) => {
+            return dataSources.hardhatNodeServices.send(data, value, from, to);
+        },
+        hh_read: (_, { contractAddress, funcName, abi, params, address }, { dataSources }) => {
+            return dataSources.hardhatNodeServices.read(contractAddress, funcName, abi, params, address);
+        },
     },
     RestResponse: {},
     Block: {
@@ -152,7 +168,27 @@ exports.resolvers = {
                     }
                 },
             });
-        }
+        },
+        abi: async ({ address }, __, { dataSources }) => {
+            try {
+                const res = await dataSources.abiServices.findABI(address, "true");
+                return JSON.stringify(res.abi);
+            }
+            catch {
+                return undefined;
+            }
+            const res = await dataSources.abiServices.findABI(address, "true");
+            return JSON.stringify(res.abi);
+        },
+        name: async ({ address }, __, { dataSources }) => {
+            try {
+                const res = await dataSources.abiServices.findABI(address, "true");
+                return res.name;
+            }
+            catch {
+                return undefined;
+            }
+        },
     },
     Transaction: {
         blockNumber: ({ blockNumber }, __, { dataSources }) => {
@@ -195,7 +231,7 @@ exports.resolvers = {
             try {
                 const decodedLog = await dataSources.abiServices.decodeLogs([address], [log]);
                 if (decodedLog && decodedLog.length == 1)
-                    return decodedLog;
+                    return JSON.stringify(decodedLog[0]);
                 throw (new Error("DECODED_LOGS_FAILED"));
             }
             catch (e) {
