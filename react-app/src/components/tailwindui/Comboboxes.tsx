@@ -11,8 +11,7 @@ export type ComboboxesInputs = {
 }
 
 export type ComboboxesState = {
-    query: State<string>,
-    selected: State<string>
+    setSelected: (selected) => void
 }
 
 export default function Comboboxes({items, defaultItem, onChange, exportState}: ComboboxesInputs) {
@@ -20,8 +19,7 @@ export default function Comboboxes({items, defaultItem, onChange, exportState}: 
   const [ selected, setSelected ] = useState<string>(defaultItem);
 
   const state: ComboboxesState = {
-    query: [ query, setQuery ],
-    selected: [ selected, setSelected ]
+    setSelected: setSelected
   }
 
   if (exportState) exportState(state);

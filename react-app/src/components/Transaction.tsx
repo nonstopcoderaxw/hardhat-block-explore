@@ -11,7 +11,7 @@ export type TransactionInputs = {
 }
 
 export type TransactionState = {
-  hash: State<string | null> | null
+  setHash: (hash) => void
 }
 
 export default function Transaction({defaultHash, exportState}: TransactionInputs) {
@@ -20,11 +20,11 @@ export default function Transaction({defaultHash, exportState}: TransactionInput
 
   useEffect(() => {
     const state: TransactionState = {
-      hash: [ hash, setHash ]
+      setHash: setHash
     }
 
     if(exportState) exportState(state);
-  }, [hash, setHash, exportState])
+  }, [setHash, exportState])
  
   const { data: gqlData, loading, error } = useQuery(TransactionDocument, {
     variables: { hash: hash! },

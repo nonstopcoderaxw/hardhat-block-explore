@@ -125,7 +125,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    if(_appState) state.comboboxes!.selected[1](_appState.selectedAccount == null ? "" : _appState.selectedAccount);
+    if(_appState) state.comboboxes!.setSelected(_appState.selectedAccount == null ? "" : _appState.selectedAccount);
   }, [_appState, state])
 
   return (

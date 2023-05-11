@@ -10,7 +10,7 @@ export type BlockInputs = {
 }
 
 export type BlockState = {
-  blockNumber: State<number | null> | null
+  setBlockNumber: (blockNumber) => void
 }
 
 type BlockOutputs = {
@@ -37,8 +37,8 @@ export default function Block({defaultBlockNumber, onClick, exportState}: BlockI
   const [ blockNumber, setBlockNumber ] = useState<number | null>(defaultBlockNumber);
   
   const state: BlockState = useMemo(() => {
-    return { blockNumber: [ blockNumber, setBlockNumber ] }
-  }, [blockNumber, setBlockNumber])
+    return { setBlockNumber: setBlockNumber }
+  }, [setBlockNumber])
 
   const { data: gqlData, loading, error } = useQuery(BlockDocument, {
     variables: { number: (blockNumber as number).toString() },

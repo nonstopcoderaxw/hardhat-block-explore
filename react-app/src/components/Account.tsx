@@ -10,7 +10,7 @@ export type AccountInputs = {
 }
 
 export type AccountState = {
-  address: State<string | null> | null,
+  setAddress: (address) => void
 }
 
 type Transaction = {
@@ -67,8 +67,8 @@ export default function Account({defaultAddress, onClick, exportState}: AccountI
     }
 
     const state: AccountState = useMemo(()=>{
-      return { address: [ address, setAddress ] }
-    }, [address, setAddress])
+      return { setAddress: setAddress }
+    }, [setAddress])
     
     useEffect(()=>{
       if (exportState) exportState(state);

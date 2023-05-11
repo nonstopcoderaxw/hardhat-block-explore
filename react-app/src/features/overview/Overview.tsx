@@ -94,7 +94,7 @@ export default function Overview({oTab, oType, oId, implId, fIndex}: OverviewInp
       if (id === oId_) return null;
       setType("account");
       setOId(id);
-      if (state.account && state.account.address) state.account.address[1](id);
+      if (state.account && state.account.setAddress) state.account.setAddress(id);
     },
     contracts: (id) => {
       if (id === oId_) return null;
@@ -102,36 +102,25 @@ export default function Overview({oTab, oType, oId, implId, fIndex}: OverviewInp
       setOId(id);
       setImplId(id);
       setFIndex(null);
-      if (state.contract 
-          && state.contract.contractAddress 
-          && state.contract.implAddress
-          && state.contract.selectedFuncIndex
-          //&& state.contract.params
-        ) {
-        state.contract.contractAddress[1](id);
-        state.contract.implAddress[1](id);
-        state.contract.selectedFuncIndex[1](null);
-        //state.contract.params[1]({});
-      }
-      if (state.contract && state.contract.selectedFuncIndex) state.contract.selectedFuncIndex[1](0);
+      if (state.contract && state.contract.reset) state.contract.reset(id);
     },
     transactions: (id) => {
       if (id === oId_) return null;
       setType("transaction");
       setOId(id);
-      if (state.transaction && state.transaction.hash) state.transaction.hash[1](id);
+      if (state.transaction && state.transaction.setHash) state.transaction.setHash(id);
     },
     blocks: (id) => {
       if (id === oId_) return null;
       setType("block");
       setOId(id);
-      if (state.block && state.block.blockNumber) state.block.blockNumber[1](Number(id));
+      if (state.block && state.block.setBlockNumber) state.block.setBlockNumber(Number(id));
     },
     account: (id) => {
       if (id === oId_) return null;
       setType("transaction");
       setOId(id);
-      if (state.transaction && state.transaction.hash) state.transaction.hash[1](id);
+      if (state.transaction && state.transaction.setHash) state.transaction.setHash(id);
     },
     contract: (id) => {
       // setType("transaction");

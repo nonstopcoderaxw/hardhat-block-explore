@@ -47,12 +47,10 @@ export type ContractOuputs = {
 }
 
 export type ContractState = {
-  contractAddress: State<string | null> | null,
-  implAddress: State<string | null> | null, 
-  selectedFuncIndex: State<number | null> | null,
   contractComboboxes: ComboboxesState | null,
   implContractComboboxes: ComboboxesState | null,
   funcsComboboxes: ComboboxesState | null
+  reset: (contractAddress) => void | null
 }
 
 export default function Contract({defaultContractAddress, defaultImplAddress, defaultSelectedFuncIndex, exportState}: ContractInputs) {
@@ -75,6 +73,8 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
     const [ params, setParams ] = useState<any>({});
     const [ viewResults, setViewResults ] = useState<any>({});
     const [ error, setError ] = useState<string | null>(null);
+
+    if (lastBN !== toBN) setToBN(lastBN);
 
     const exportStateHandler = {
       contractComboboxes: (comboboxesState: ComboboxesState) => {
@@ -102,12 +102,22 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
 
     const state: ContractState = useMemo(() => {
       return {
-        contractAddress: [ contractAddress, setContractAddress ],
-        implAddress: [ implAddress, setImplAddress ], 
-        selectedFuncIndex: [ selectedFuncIndex, setSelectedFuncIndex ],
         contractComboboxes: null,
         implContractComboboxes: null,
-        funcsComboboxes: null
+        funcsComboboxes: null,
+        reset: (contractAddress) => {
+          setContractAddress(contractAddress);
+          setImplAddress(contractAddress);
+          setSelectedFuncIndex(null);
+          setFromBN(0); //Latest
+          setToBN(0); //Latest
+          setEthValue(undefined); 
+          setParams({}); 
+          setViewResults({}); 
+          setError(null); 
+          hh_read_reset();
+          hh_send_reset();
+        }
       }
     }, [contractAddress, setContractAddress, implAddress, setImplAddress, selectedFuncIndex, setSelectedFuncIndex])
 
@@ -128,7 +138,13 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
       },
       implementation: (address) => {
         setImplAddress(address);
-        setSelectedFuncIndex(0);
+        setSelectedFuncIndex(null);
+        setEthValue(undefined); 
+        setParams({}); 
+        setViewResults({}); 
+        setError(null); 
+        hh_read_reset();
+        hh_send_reset();
         const urlParam: URLParam = getURLParam(window.location.hash);
         const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/contract/${urlParam.oId}/${address}`;
         window.history.pushState({ path: bookmark }, '', bookmark);
@@ -136,9 +152,8 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
       function: (item) => {
         const fIndex = funcAbiMinimal.findIndex(element => element === item);
         setSelectedFuncIndex(fIndex);
-        hh_send_reset();
         hh_read_reset();
-        setViewResults({});
+        hh_send_reset();
         const urlParam: URLParam = getURLParam(window.location.hash);
         const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/contract/${urlParam.oId}/${urlParam.implId}/${fIndex}`;
         window.history.pushState({ path: bookmark }, '', bookmark);
@@ -185,6 +200,8 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
       setError(null);
       hh_read_reset();
       hh_send_reset();
+      setViewResults({});
+
       const _selectedfuncindexinputs: number = e.target.getAttribute("data-selectedfuncindexinputs");
 
       const _selectedabijson = (new Abi(
@@ -287,9 +304,9 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
 
     useEffect(()=>{
       if (exportState) exportState(state);
-      state.contractComboboxes!.selected[1](contractAddress == null ? "" : contractAddress);
-      state.implContractComboboxes!.selected[1](implAddress == null ? "" : implAddress);
-      if (state.funcsComboboxes) state.funcsComboboxes.selected[1](funcComboboxesSelected);
+      state.contractComboboxes!.setSelected(contractAddress == null ? "" : contractAddress);
+      state.implContractComboboxes!.setSelected(implAddress == null ? "" : implAddress);
+      if (state.funcsComboboxes) state.funcsComboboxes.setSelected(funcComboboxesSelected);
     }, [state, funcComboboxesSelected, exportState, contractAddress, implAddress]);
     
     return (
