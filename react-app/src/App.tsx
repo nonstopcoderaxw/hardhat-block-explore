@@ -9,7 +9,7 @@ import { useAppDispatch } from './appContext/hooks';
 import { useLocation } from 'react-router-dom';
 import { getURLParam, URLParam } from "./utils/utils";
 import { initAppState, updateSelectedAccount, GlobalAppState } from "./appContext/appContextSlice"
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type NavItem = {
   name: string | null, 
@@ -63,10 +63,10 @@ export default function App() {
       RightItem: (() => comboboxes),
       LogoImg: (() => logoImg),
       navItems: [
-        { name: 'Overview', href: '/overview', current: true },
-        { name: 'Interactions', href: '#', current: false },
-        { name: 'ABIs', href: '#', current: false },
-        { name: 'Utilities', href: '#', current: false }
+        //{ name: 'Overview', href: '/', current: true },
+        //{ name: 'Interactions', href: '#', current: false },
+        //{ name: 'ABIs', href: '/abis', current: false },
+        //{ name: 'Utilities', href: '#', current: false }
       ]
   }
   
@@ -123,6 +123,7 @@ export default function App() {
           </div>
         </>
   }
+
 
   useEffect(() => {
     if(_appState) state.comboboxes!.setSelected(_appState.selectedAccount == null ? "" : _appState.selectedAccount);

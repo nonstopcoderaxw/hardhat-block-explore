@@ -7,6 +7,8 @@ import Account, { AccountInputs, AccountState } from "../../components/Account"
 import Contract, { ContractState, ContractInputs } from "../../components/Contract"
 import Transaction, { TransactionInputs, TransactionState } from "../../components/Transaction"
 import Tabs, { TabsInputs } from "../../components/tailwindui/Tabs"
+import { Combo1_Query } from "../../graphql/queries"
+import { useQuery } from "@apollo/client"
 import { useAppSelector } from '../../appContext/hooks'
 import { selectAppState } from "../../appContext/appContextSlice"
 import { Account as Account_, Transaction as Transaction_, Block as Block_ } from "../../graphql/generated";

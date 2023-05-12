@@ -61,20 +61,17 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
 
     let _appState = useAppSelector(selectAppState);
     if (!_appState) throw (new Error("NULL_APP_STATE"));
-    const blocks: Block_[] = _appState.blocks as Block_[];
-    const lastBN: number = blocks.length > 0 ? Number(blocks[0].number) : 0;
     
     const [ contractAddress, setContractAddress ] = useState<string | null>(defaultContractAddress);
     const [ implAddress, setImplAddress ] = useState<string | null>(defaultImplAddress);
     const [ selectedFuncIndex, setSelectedFuncIndex ] = useState<number | null>(Number(defaultSelectedFuncIndex));
-    const [ fromBN, setFromBN ] = useState<number | null>(lastBN);
-    const [ toBN, setToBN ] = useState<number | null>(lastBN);
+    const [ fromBN, setFromBN ] = useState<number | null>(null);
+    const [ toBN, setToBN ] = useState<number | null>(null);
     const [ ethValue, setEthValue ] = useState<string | undefined>(undefined);
     const [ params, setParams ] = useState<any>({});
     const [ viewResults, setViewResults ] = useState<any>({});
     const [ error, setError ] = useState<string | null>(null);
-
-    if (lastBN !== toBN) setToBN(lastBN);
+    const [ txHash, setTxHash ] = useState<string | null>(null);
 
     const exportStateHandler = {
       contractComboboxes: (comboboxesState: ComboboxesState) => {
@@ -92,12 +89,7 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
       variables: { address: implAddress as string },
       skip: !implAddress || implAddress == null 
     }); 
-    const [hh_send, { data: hh_send_data, reset: hh_send_reset, error: hh_send_error}] = useMutation(Hh_SendDocument);
-    const [hh_read, { data: hh_read_data, reset: hh_read_reset, error: hh_read_error}] = useMutation(Hh_ReadDocument);
     
-
-    if (hh_read_error && hh_read_error.toString() !== error) setError(hh_read_error.toString());
-
     if (!gqlLoading && gqlError) throw(gqlError)
 
     const state: ContractState = useMemo(() => {
@@ -108,15 +100,12 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
         reset: (contractAddress) => {
           setContractAddress(contractAddress);
           setImplAddress(contractAddress);
-          setSelectedFuncIndex(null);
-          setFromBN(0); //Latest
-          setToBN(0); //Latest
+          setSelectedFuncIndex(0);
           setEthValue(undefined); 
           setParams({}); 
           setViewResults({}); 
           setError(null); 
-          hh_read_reset();
-          hh_send_reset();
+          setTxHash(null);
         }
       }
     }, [contractAddress, setContractAddress, implAddress, setImplAddress, selectedFuncIndex, setSelectedFuncIndex])
@@ -138,13 +127,12 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
       },
       implementation: (address) => {
         setImplAddress(address);
-        setSelectedFuncIndex(null);
+        setSelectedFuncIndex(0);
         setEthValue(undefined); 
         setParams({}); 
         setViewResults({}); 
         setError(null); 
-        hh_read_reset();
-        hh_send_reset();
+        setTxHash(null);
         const urlParam: URLParam = getURLParam(window.location.hash);
         const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/contract/${urlParam.oId}/${address}`;
         window.history.pushState({ path: bookmark }, '', bookmark);
@@ -152,8 +140,6 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
       function: (item) => {
         const fIndex = funcAbiMinimal.findIndex(element => element === item);
         setSelectedFuncIndex(fIndex);
-        hh_read_reset();
-        hh_send_reset();
         const urlParam: URLParam = getURLParam(window.location.hash);
         const bookmark = `${window.location.protocol}//${window.location.host}${window.location.pathname}#${urlParam.nab}/${urlParam.oTab}/contract/${urlParam.oId}/${urlParam.implId}/${fIndex}`;
         window.history.pushState({ path: bookmark }, '', bookmark);
@@ -198,12 +184,10 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
 
     const readbtnOnClickHanlder = async (e) => {
       setError(null);
-      hh_read_reset();
-      hh_send_reset();
       setViewResults({});
+      setTxHash(null);
 
       const _selectedfuncindexinputs: number = e.target.getAttribute("data-selectedfuncindexinputs");
-
       const _selectedabijson = (new Abi(
         JSON.stringify(
           [ funcsInputs.items[_selectedfuncindexinputs] ]
@@ -213,8 +197,8 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
       try {
         const iface = new ethers.utils.Interface(_selectedabijson);
         const funcName = _selectedabijson[0].name;
-        const blockTag0: number = fromBN == null ? lastBN : fromBN;
-        const blockTag1: number = toBN == null ? lastBN : toBN;
+        const blockTag0: number = fromBN === null ? 0 : fromBN;
+        const blockTag1: number = toBN === null ? 0 : toBN;
 
         if (blockTag0 > blockTag1) throw (new Error("Wrong Block Number"));
         const _viewResults = {};
@@ -234,15 +218,15 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
         } 
         setViewResults({..._viewResults});
       } catch (e: any) {
-        setError(e.toString());
+        setError(e.toString().includes("BAD_DATA") ? "Error: please all inputs are in correct formats(inc. block numbers)" : e.toString());
       }
     };
 
-    const writebtnOnClickHandler = (e) => {
+    const writebtnOnClickHandler = async (e) => {
       setError(null);
-      hh_read_reset();
-      hh_send_reset();
       setViewResults({});
+      setTxHash(null);
+
       const _selectedfuncindexinputs: number = e.target.getAttribute("data-selectedfuncindexinputs");
 
       const _selectedabijson = (new Abi(
@@ -253,14 +237,19 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
 
       try {
         const iface = new ethers.utils.Interface(_selectedabijson);
-        const funcName = _selectedabijson[0].name
+        const funcName = _selectedabijson[0].name 
         const calldata = iface.encodeFunctionData(funcName, params[_selectedfuncindexinputs]);
-        hh_send({ variables: { 
-          data: calldata,
-          value: ethValue ? ethValue : "0x0",
-          to: contractAddress!,
-          from: _appState.selectedAccount
-        } });
+        const resp = await apolloClient.mutate({
+          mutation: Hh_SendDocument, 
+          variables: { 
+            data: calldata,
+            value: ethValue ? ethValue : "0x0",
+            to: contractAddress!,
+            from: _appState.selectedAccount
+          }
+        });
+
+        setTxHash(resp.data!.hh_send!)
       } catch (e: any) {
         setError(e.toString());
       }
@@ -292,7 +281,7 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
       },
       paramOnChangeHandler: paramOnChangeHandler,
       error: error,
-      txHash: hh_send_data?.hh_send ? hh_send_data?.hh_send : null,
+      txHash: txHash,
       viewResults: viewResults,
       txHashOnClickHandler: (e) => {
         const hash = e.target.getAttribute("data-hash");
@@ -307,6 +296,12 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
       state.contractComboboxes!.setSelected(contractAddress == null ? "" : contractAddress);
       state.implContractComboboxes!.setSelected(implAddress == null ? "" : implAddress);
       if (state.funcsComboboxes) state.funcsComboboxes.setSelected(funcComboboxesSelected);
+      
+      const blocks: Block_[] = _appState.blocks as Block_[];
+      const lastBN: number = blocks.length > 0 ? Number(blocks[0].number) : 0; /// load again
+      if (fromBN === null) setFromBN(lastBN);
+      if (lastBN !== toBN) setToBN(lastBN);
+
     }, [state, funcComboboxesSelected, exportState, contractAddress, implAddress]);
     
     return (
