@@ -19,6 +19,10 @@ export class HardhatNodeServices {
 		}
     }
 
+    async blockNumber(): Promise<number> {
+    	return await this.provider.getBlockNumber();
+    }
+
     async send(data: string, value: string, from: string, to?: string): Promise<string> {
     	const provider: JsonRpcProvider = this.provider;
     	const signers: JsonRpcSigner[] = await provider.listAccounts();

@@ -1,5 +1,5 @@
 import { ethers } from "ethers"
-import { ContractDocument, Account as Account_, Block as Block_, Hh_ReadDocument, Hh_SendDocument } from "../graphql/generated";
+import { ContractDocument, Account as Account_, Block as Block_, Hh_ReadDocument, Hh_SendDocument, ProfileDocument } from "../graphql/generated";
 import { useQuery, useMutation } from "@apollo/client"
 import { getURLParam, URLParam, State } from "../utils/utils"
 import Comboboxes, { ComboboxesInputs, ComboboxesState} from "./tailwindui/Comboboxes"
@@ -10,7 +10,6 @@ import { selectAppState } from "../appContext/appContextSlice"
 import { Abi, Function } from "../utils/abi"
 import { Address } from "../utils/Address"
 import { apolloClient } from "../ApolloClient"
-
 
 export type ContractInputs = {
   defaultContractAddress: string | null,
@@ -217,10 +216,25 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
           _viewResults[i] = resp.data!.hh_read;
         } 
         setViewResults({..._viewResults});
+        refreshBlockNumber();
       } catch (e: any) {
         setError(e.toString().includes("BAD_DATA") ? "Error: please all inputs are in correct formats(inc. block numbers)" : e.toString());
       }
     };
+
+    const refreshBlockNumber = async () => {
+        try {
+          const resp = await apolloClient.query({
+            query: ProfileDocument,
+            fetchPolicy: 'network-only'
+          })
+          const lastBN: number = resp.data!.profile.blockNumber;
+          if (fromBN === null) setFromBN(lastBN);
+          if (lastBN !== toBN) setToBN(lastBN);
+        } catch (e: any) {
+          setError(e.toString());
+        }
+    }
 
     const writebtnOnClickHandler = async (e) => {
       setError(null);
@@ -250,6 +264,7 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
         });
 
         setTxHash(resp.data!.hh_send!)
+        refreshBlockNumber();
       } catch (e: any) {
         setError(e.toString());
       }
@@ -290,18 +305,12 @@ export default function Contract({defaultContractAddress, defaultImplAddress, de
         window.open(urlTo, '_blank');
       }
     }
-
-    useEffect(()=>{
+    useEffect(() => {
       if (exportState) exportState(state);
       state.contractComboboxes!.setSelected(contractAddress == null ? "" : contractAddress);
       state.implContractComboboxes!.setSelected(implAddress == null ? "" : implAddress);
       if (state.funcsComboboxes) state.funcsComboboxes.setSelected(funcComboboxesSelected);
-      
-      const blocks: Block_[] = _appState.blocks as Block_[];
-      const lastBN: number = blocks.length > 0 ? Number(blocks[0].number) : 0; /// load again
-      if (fromBN === null) setFromBN(lastBN);
-      if (lastBN !== toBN) setToBN(lastBN);
-
+      refreshBlockNumber();
     }, [state, funcComboboxesSelected, exportState, contractAddress, implAddress]);
     
     return (

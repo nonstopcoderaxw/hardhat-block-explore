@@ -4,11 +4,31 @@ import fs from "fs";
 import * as dotenv from 'dotenv'
 dotenv.config();
 
-
-if (process.env.FORKING == "true") {
-  console.log("Forking at block number " + process.env.BLOCK_NUMBER);
+const enviornment = {
+  local: () => {
+    return {
+      REMOTE_NODE_ENDPOINT: process.env.REMOTE_NODE_ENDPOINT,
+      BLOCK_NUMBER: process.env.BLOCK_NUMBER,
+      FORKING: process.env.FORKING
+    }
+  },
+  docker: () => {
+    return {
+      REMOTE_NODE_ENDPOINT: fs.readFileSync(process.env.REMOTE_NODE_ENDPOINT_FILE, 'utf8'),
+      BLOCK_NUMBER: process.env.BLOCK_NUMBER,
+      FORKING: process.env.FORKING
+    }
+  }
 }
 
+if (!process.env.ENV) process.env.ENV = "local";
+if ( !["local", "docker"].includes(process.env.ENV) ) throw (new Error("invalid ENV - only 'local' or 'docker"));
+
+const ENV = enviornment[process.env.ENV]();
+
+if (ENV.FORKING == "true") {
+  console.log("Forking at block number " + ENV.BLOCK_NUMBER);
+}
 
 const config: HardhatUserConfig = {
   defaultNetwork: "hardhat",
@@ -19,10 +39,10 @@ const config: HardhatUserConfig = {
         auto: true,
         interval: 0
       },
-      forking: process.env.FORKING == "true" ? 
+      forking: ENV.FORKING == "true" ? 
       {
-        url: process.env.REMOTE_NODE_ENDPOINT ? process.env.REMOTE_NODE_ENDPOINT : undefined,
-        blockNumber: process.env.BLOCK_NUMBER ? parseInt(process.env.BLOCK_NUMBER) : undefined
+        url: ENV.REMOTE_NODE_ENDPOINT ? ENV.REMOTE_NODE_ENDPOINT : undefined,
+        blockNumber: ENV.BLOCK_NdUMBER ? parseInt(ENV.BLOCK_NUMBER) : undefined
       } : undefined
     }
   },
@@ -49,17 +69,5 @@ const config: HardhatUserConfig = {
     timeout: 400000
   }
 };
-
-// function getRpcEndPoint(): string {
-//   try {
-//     return fs.readFileSync('/run/secrets/rpc_endpoint', 'utf8'); // from docker
-//   } catch(e) {};
-
-//   try {
-//     return fs.readFileSync('../rpc_endpoint.txt', 'utf8');
-//   } catch(e) {};
-
-//   throw new Error('RPC Endpoint Not Found!');
-// };
 
 export default config;

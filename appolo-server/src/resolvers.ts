@@ -130,6 +130,12 @@ export const resolvers = {
     abi: async (_: any, { address, cache }: any, { dataSources }: any) => {
       return JSON.stringify(await dataSources.abiServices.findABI(address, cache.toString()));
     },
+
+    profile: async (_: any, __: any, { dataSources }: any) => {
+      return {
+        blockNumber: await dataSources.hardhatNodeServices.blockNumber()
+      }
+    },
   },
 
   Mutation: {
@@ -149,6 +155,10 @@ export const resolvers = {
 
   RestResponse: {
    
+  },
+
+  Profile: {
+    
   },
 
   Block: {

@@ -2,8 +2,13 @@ services:
   hardhat-node:
     build: 
       context: hardhat-node
-      secrets:
-        - rpc_endpoint
+    environment: 
+      ENV: docker      ## please don't change. no other value allowed. 
+      FORKING: true
+      BLOCK_NUMBER: 1724361
+      REMOTE_NODE_ENDPOINT_FILE: /run/secrets/REMOTE_NODE_ENDPOINT
+    secrets:
+      - REMOTE_NODE_ENDPOINT
     image: hardhat-node:1.0
     ports:
       - "8545:8545"

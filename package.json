@@ -6,10 +6,17 @@
   "license": "MIT",
   "scripts": {
     "build:hardhat:only": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml build --progress=plain",
+    "build:prisma:only": "docker compose -f ./base-compose.yaml -f ./prisma/docker-compose.yaml -f ./postgres/docker-compose.yaml build --progress=plain",
     "up:hardhat:only": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml up",
-    "down:hardhat:only": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml up",
     "up:postgresql:only": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml up",
+    "up:postgresql:prisma": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml -f ./prisma/docker-compose.yaml up",
+    "up:postgresql:adminer:only": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml up -d adminer",
+    "up:harhat:postgresql": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml -f ./hardhat-node/docker-compose.yaml up",
+    "up:harhat:postgresql:prisma": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml -f ./postgres/docker-compose.yaml -f ./prisma/docker-compose.yaml up",
+    "down:hardhat:only": "docker compose -f ./base-compose.yaml -f ./hardhat-node/docker-compose.yaml down",
     "down:postgresql:only": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml down",
-    "up:postgresql:adminer:only": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml up -d adminer"
+    "down:harhat:postgresql": "docker compose -f ./base-compose.yaml -f ./postgres/docker-compose.yaml -f ./hardhat-node/docker-compose.yaml down"
   }
 }
+
+

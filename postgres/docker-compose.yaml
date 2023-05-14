@@ -16,7 +16,8 @@ services:
       - ./postgres/init_db_script.sh:/docker-entrypoint-initdb.d/init_db_script.sh    # place script under docker-entrypoint-initdb.d will auto triggered after db init. **It requires a custom postgreSQL build for "chmod -R 777"
       - ./postgres/clear_db_script.sh:/clear_db_script.sh
     ports:
-      - "5432:5432"
+      - "6432:5432"
+    
   adminer:
     image: adminer
     restart: always

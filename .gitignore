@@ -2,11 +2,12 @@
 .free-notes.txt
 user0_pw.txt
 user1_pw.txt
+db_connection_string.txt
 cache/
 node_modules/
 yarn-error.log
 yarn.lock
-rpc_endpoint.txt
+REMOTE_NODE_ENDPOINT.txt
 .env
 yarn-error.log
 yarn.log

@@ -16,6 +16,8 @@ export const typeDefs = gql`
     block(number: ID!): Block
 
     abi(address: String!, cache: Boolean!): String
+
+    profile: Profile!
   }
 
   type Mutation {
@@ -27,6 +29,10 @@ export const typeDefs = gql`
   type RestResponse {
     status: String!
   } 
+
+  type Profile {
+    blockNumber: Int!
+  }
 
   type Account {
   	address: ID!
