@@ -1,0 +1,67 @@
+[
+    {
+        "number": "0",
+        "baseFeePerGas": "1000000000",
+        "difficulty": "0",
+        "extraData": "0x1234",
+        "gasLimit": "30000000",
+        "gasUsed": "0",
+        "hash": "0xd06fec77142ff8fa36339581452655a6a78fc0ca8df29df9fc6e745013d85fbc",
+        "miner": "0x0000000000000000000000000000000000000000",
+        "nonce": "0",
+        "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "timestamp": "1682926072"
+    },
+    {
+        "number": "1",
+        "baseFeePerGas": "875000000",
+        "difficulty": "0",
+        "extraData": "0x",
+        "gasLimit": "30000000",
+        "gasUsed": "175462",
+        "hash": "0x2823fe33d499daa03a5c20b22279d2926b97bb6fa35b4397efaaf0bf14a874b0",
+        "miner": "0xC014BA5EC014ba5ec014Ba5EC014ba5Ec014bA5E",
+        "nonce": "0",
+        "parentHash": "0xd06fec77142ff8fa36339581452655a6a78fc0ca8df29df9fc6e745013d85fbc",
+        "timestamp": "1682926173"
+    },
+    {
+        "number": "2",
+        "baseFeePerGas": "766904411",
+        "difficulty": "0",
+        "extraData": "0x",
+        "gasLimit": "30000000",
+        "gasUsed": "175462",
+        "hash": "0x986ec7023e1b6e91a5c056b4bc82da62a7f72f171657a5cf944f2fb01e761d9d",
+        "miner": "0xC014BA5EC014ba5ec014Ba5EC014ba5Ec014bA5E",
+        "nonce": "0",
+        "parentHash": "0x2823fe33d499daa03a5c20b22279d2926b97bb6fa35b4397efaaf0bf14a874b0",
+        "timestamp": "1682926187"
+    },
+    {
+        "number": "3",
+        "baseFeePerGas": "672162715",
+        "difficulty": "0",
+        "extraData": "0x",
+        "gasLimit": "30000000",
+        "gasUsed": "175462",
+        "hash": "0x1d9a4b713e0c77ff832830a935de4a119f2a8c40f407a2d365201e9c29e984b8",
+        "miner": "0xC014BA5EC014ba5ec014Ba5EC014ba5Ec014bA5E",
+        "nonce": "0",
+        "parentHash": "0x986ec7023e1b6e91a5c056b4bc82da62a7f72f171657a5cf944f2fb01e761d9d",
+        "timestamp": "1682936989"
+    },
+    {
+        "number": "4",
+        "baseFeePerGas": "589125201",
+        "difficulty": "0",
+        "extraData": "0x",
+        "gasLimit": "30000000",
+        "gasUsed": "175462",
+        "hash": "0xee3a77655eab4e2e40ce0073f5fdd1d263e473175aa56e118c56842d3e2f738a",
+        "miner": "0xC014BA5EC014ba5ec014Ba5EC014ba5Ec014bA5E",
+        "nonce": "0",
+        "parentHash": "0x1d9a4b713e0c77ff832830a935de4a119f2a8c40f407a2d365201e9c29e984b8",
+        "timestamp": "1682937855"
+    }
+]

@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "TransactionReceipt" ALTER COLUMN "cumulativeGasUsed" SET DATA TYPE TEXT,
+ALTER COLUMN "gasPrice" SET DATA TYPE TEXT,
+ALTER COLUMN "gasUsed" SET DATA TYPE TEXT;

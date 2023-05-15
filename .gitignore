@@ -1,0 +1,17 @@
+.DS_Store
+.free-notes.txt
+user0_pw.txt
+user1_pw.txt
+ETHERSCAN_API_KEY.txt
+db_connection_string.txt
+cache/
+node_modules/
+yarn-error.log
+yarn.lock
+REMOTE_NODE_ENDPOINT.txt
+.env
+yarn-error.log
+yarn.log
+init_db_script_local.sh
+clear_db_script_local.sh
+
