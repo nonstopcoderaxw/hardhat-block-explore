@@ -31,8 +31,7 @@
     "axios": "^1.3.5"
   },
   "scripts": {
-    "start:local": "npx hardhat node",
-    "start:docker": "npx hardhat node"
+    "start": "npx hardhat node"
   }
 }
 
