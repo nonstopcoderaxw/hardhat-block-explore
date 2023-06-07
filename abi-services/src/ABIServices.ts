@@ -4,6 +4,8 @@ import { Address } from "./Address";
 import ABIDecoder from "abi-decoder-typescript"
 import erc20 from "./abis/ERC20.json";
 import erc721 from "./abis/ERC721.json";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 // preload abis - ERC20, ERC721
 const abiDecoder = new ABIDecoder();
@@ -33,7 +35,6 @@ export type EventData = {
 	type: string,
 	value: string
 }
-
 const redis = new Redis({
 	host: process.env.REDISHOST!,
     port: Number(process.env.REDISPORT!),
