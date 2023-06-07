@@ -22,6 +22,10 @@ type LogMessage = {
 
 async function main() {
   const connection = new IORedis({
+      host: process.env.REDISHOST!,
+      port: Number(process.env.REDISPORT!),
+      username: process.env.REDISUSER!,
+      password: process.env.REDISPASSWORD!,
       maxRetriesPerRequest: 0
   });
 
