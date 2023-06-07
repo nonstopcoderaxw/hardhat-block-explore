@@ -34,7 +34,12 @@ export type EventData = {
 	value: string
 }
 
-const redis = new Redis();
+const redis = new Redis({
+	host: process.env.REDISHOST!,
+    port: Number(process.env.REDISPORT!),
+    username: process.env.REDISUSER!,
+    password: process.env.REDISPASSWORD!,
+});
 
 export class ABIServices {
 	private readonly etherscanApiRequest: EtherscanApiRequest;
