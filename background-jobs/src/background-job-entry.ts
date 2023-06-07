@@ -47,7 +47,7 @@ async function main() {
       },
     }
   );
-  
+
   const importJob = new ImportJob(
     new HardhatNodeServices(process.env.NODE_ENDPOINT as string), 
     new PrismaClientServices(prisma)

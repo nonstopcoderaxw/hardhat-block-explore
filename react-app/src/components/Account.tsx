@@ -1,7 +1,7 @@
 import { AccountDocument, Account as Account_, Transaction as Transaction_ } from "../graphql/generated";
 import { useQuery } from "@apollo/client";
 import { useState, useEffect, useMemo } from "react";
-import { getURLParam, URLParam, State } from "../utils/utils";
+import { getURLParam, URLParam } from "../utils/utils";
 
 export type AccountInputs = {
   defaultAddress: string | null,
@@ -70,6 +70,7 @@ export default function Account({defaultAddress, onClick, exportState}: AccountI
       return { setAddress: setAddress }
     }, [setAddress])
     
+
     useEffect(()=>{
       if (exportState) exportState(state);
     }, [state, exportState]);
