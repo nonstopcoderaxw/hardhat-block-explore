@@ -9,7 +9,8 @@ const enviornment = {
     return {
       REMOTE_NODE_ENDPOINT: process.env.REMOTE_NODE_ENDPOINT,
       BLOCK_NUMBER: process.env.BLOCK_NUMBER,
-      FORKING: process.env.FORKING
+      FORKING: process.env.FORKING,
+      RAILWAY_NODE: process.env.RAILWAY_NODE
     }
   },
   docker: () => {
@@ -44,6 +45,9 @@ const config: HardhatUserConfig = {
         url: ENV.REMOTE_NODE_ENDPOINT ? ENV.REMOTE_NODE_ENDPOINT : undefined,
         blockNumber: ENV.BLOCK_NdUMBER ? parseInt(ENV.BLOCK_NUMBER) : undefined
       } : undefined
+    },
+    railway: {
+      url: ENV.RAILWAY_NODE
     }
   },
   solidity: {
