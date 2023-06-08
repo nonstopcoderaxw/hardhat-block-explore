@@ -20,7 +20,7 @@ async function startApolloServer() {
         dataSources: {
           prisma: process.env.PROD == "true" ? prisma : prismaDev,
           abiServices: new ABIServices(),
-          hardhatNodeServices: new HardhatNodeServices(process.env.NODE_ENDPOINT!)
+          hardhatNodeServices: new HardhatNodeServices(process.env.rpc_endpoint!)
         },
       };
     },
